@@ -44,9 +44,9 @@ export async function enrichContentWithReferencesYouTubeAndCTA(
         html,
         articleTitle,
         serperApiKey,
-        log
+        log('Integrating YouTube video...')
       );
-      html = youtubeResult.html;
+      html = youtubeResult.;
     } else {
       log?.(' ⚠️ Skipping YouTube: No Serper API key');
     }
