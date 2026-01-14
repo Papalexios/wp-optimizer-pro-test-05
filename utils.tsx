@@ -7,8 +7,10 @@ import {
     NeuronTerm, ExistingContentAnalysis, EntityGapAnalysis, InternalLinkTarget,
     OpportunityScore, SerpLengthPolicy, ScoreBreakdown,
     CURRENT_SCORE_WEIGHTS, QARuleContext, QADetectionResult,
-    InternalLinkResult, ValidatedReference, SiteContext, createDefaultSeoMetrics
+    InternalLinkResult, InternalLinkAddedItem, InternalLinkInjectionResult,
+    ValidatedReference, SiteContext, HeadingInfo, createDefaultSeoMetrics
 } from './types';
+
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
