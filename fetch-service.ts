@@ -1014,7 +1014,7 @@ return validatedRefs.sort((a, b) => {
     if (!a.isAuthority && b.isAuthority) return 1;
     return parseInt(String(b.year)) - parseInt(String(a.year));
 });
-
+}  // <-- ADD THIS LINE
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🧠 ENTITY GAP ANALYSIS — WITH DEDUPLICATION
@@ -2457,5 +2457,4 @@ export async function discoverInternalLinkTargets(
         onProgress?.(`   ⚠️ Link discovery failed: ${e.message}`);
         return [];
     }
-}
 }
