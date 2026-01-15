@@ -1498,7 +1498,7 @@ Output ONLY valid JSON with: title, metaDescription, slug, htmlContent, excerpt,
                 if (parsed.success && parsed.data?.htmlContent) {
                     let rawContract = parsed.data as ContentContract;
                     
-                    // Wait for parallel tasks
+                    // Wait for parallel tasks to complete
                     await Promise.all([youtubePromise, referencesPromise]);
                     
                     // ═══════════════════════════════════════════════════════════
@@ -1600,6 +1600,7 @@ Output ONLY valid JSON with: title, metaDescription, slug, htmlContent, excerpt,
                             log
                         );
                         assembledContent = linkResult.html;
+                        log(`   ✅ ${linkResult.totalLinks} internal links added`);
                     }
                     
                     const finalContract: ContentContract = {
