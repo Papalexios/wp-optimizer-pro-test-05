@@ -3,13 +3,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // 
 // CRITICAL FIXES v27.0:
-// ✅ FIXED: createDefaultSeoMetrics now defined locally (no broken import)
+// ✅ FIXED: Removed duplicate YouTube exports
+// ✅ FIXED: createDefaultSeoMetrics defined locally
 // ✅ H1 REMOVAL — Comprehensive H1 tag stripping
 // ✅ INTERNAL LINK INJECTION — Semantic matching with quality scoring
 // ✅ QA SWARM — 40+ validation rules
 // ✅ NLP COVERAGE — Term usage analysis
 // ✅ READABILITY — Flesch-Kincaid scoring
-// ✅ YOUTUBE INTEGRATION — Video search and embed generation
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { 
@@ -24,9 +24,7 @@ import {
     InternalLinkTarget,
     InternalLinkResult,
     ValidatedReference,
-    FAQ,
-    YouTubeVideoData,
-    YouTubeSearchResult
+    FAQ
 } from './types';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -36,7 +34,7 @@ import {
 export const UTILS_VERSION = "27.0.0";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🔧 FACTORY FUNCTIONS (FIXES THE BUILD ERROR)
+// 🔧 FACTORY FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function createDefaultSeoMetrics(): SeoMetrics {
@@ -57,16 +55,6 @@ export function createDefaultSeoMetrics(): SeoMetrics {
         faqCount: 0
     };
 }
-
-// At the top of utils.tsx, add the import
-export {
-    searchYouTubeVideo,
-    generateYouTubeEmbed,
-    generateCompactYouTubeEmbed,
-    YouTubeVideoData,
-    YouTubeSearchResult,
-    YouTubeSearchOptions
-} from './lib/youtube-service';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 📏 TEXT UTILITIES
@@ -159,7 +147,6 @@ export function calculateOpportunityScore(
     let lengthScore = 50;
     let freshness = 50;
     
-    // Title score
     if (title) {
         const titleLength = title.length;
         if (titleLength >= 50 && titleLength <= 60) titleScore = 100;
@@ -167,7 +154,6 @@ export function calculateOpportunityScore(
         else if (titleLength < 30 || titleLength > 80) titleScore = 30;
     }
     
-    // Length score
     if (wordCount !== null) {
         if (wordCount >= 4000) lengthScore = 100;
         else if (wordCount >= 2500) lengthScore = 80;
@@ -199,7 +185,6 @@ export function removeAllH1Tags(html: string, log?: (msg: string) => void): stri
     
     let cleaned = html;
     
-    // Multiple passes with different patterns
     const patterns = [
         /<h1[^>]*>[\s\S]*?<\/h1>/gi,
         /<h1[^>]*\/>/gi,
@@ -212,11 +197,8 @@ export function removeAllH1Tags(html: string, log?: (msg: string) => void): stri
         }
     }
     
-    // Remove any orphaned tags
     cleaned = cleaned.replace(/<h1\b[^>]*>/gi, '');
     cleaned = cleaned.replace(/<\/h1>/gi, '');
-    
-    // Clean up whitespace
     cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
     
     const h1CountAfter = (cleaned.match(/<h1/gi) || []).length;
@@ -252,23 +234,16 @@ export function calculateSeoMetrics(
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const text = doc.body?.textContent || '';
     
-    // Word count
     metrics.wordCount = text.split(/\s+/).filter(Boolean).length;
-    
-    // Heading counts
     metrics.h2Count = doc.querySelectorAll('h2').length;
     metrics.h3Count = doc.querySelectorAll('h3').length;
-    
-    // Image count
     metrics.imageCount = doc.querySelectorAll('img').length;
     
-    // FAQ count
     const faqIndicators = ['frequently asked', 'faq', '❓'];
     metrics.faqCount = faqIndicators.reduce((count, indicator) => {
         return count + (html.toLowerCase().includes(indicator) ? 1 : 0);
     }, 0);
     
-    // Content depth (0-100)
     const depthFactors = [
         metrics.wordCount >= 3000 ? 25 : (metrics.wordCount / 3000) * 25,
         metrics.h2Count >= 8 ? 20 : (metrics.h2Count / 8) * 20,
@@ -279,7 +254,6 @@ export function calculateSeoMetrics(
     ];
     metrics.contentDepth = Math.min(100, Math.round(depthFactors.reduce((a, b) => a + b, 0)));
     
-    // Readability (Flesch-Kincaid approximation)
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const avgWordsPerSentence = metrics.wordCount / Math.max(1, sentences.length);
     
@@ -289,7 +263,6 @@ export function calculateSeoMetrics(
     else if (avgWordsPerSentence <= 30) metrics.readability = 60;
     else metrics.readability = 50;
     
-    // Heading structure
     const h1Count = doc.querySelectorAll('h1').length;
     if (h1Count === 0 && metrics.h2Count >= 5 && metrics.h3Count >= 10) {
         metrics.headingStructure = 100;
@@ -301,7 +274,6 @@ export function calculateSeoMetrics(
         metrics.headingStructure = 60;
     }
     
-    // AEO Score (Answer Engine Optimization)
     const aeoFactors = [
         html.includes('quick answer') || html.includes('Quick Answer') ? 20 : 0,
         metrics.faqCount > 0 ? 25 : 0,
@@ -312,7 +284,6 @@ export function calculateSeoMetrics(
     ];
     metrics.aeoScore = Math.min(100, aeoFactors.reduce((a, b) => a + b, 0));
     
-    // GEO Score (Generative Engine Optimization)
     const geoFactors = [
         metrics.wordCount >= 4000 ? 30 : (metrics.wordCount / 4000) * 30,
         metrics.contentDepth >= 80 ? 25 : (metrics.contentDepth / 80) * 25,
@@ -322,7 +293,6 @@ export function calculateSeoMetrics(
     ];
     metrics.geoScore = Math.min(100, Math.round(geoFactors.reduce((a, b) => a + b, 0)));
     
-    // E-E-A-T Signals
     const eeatPhrases = [
         'according to', 'research shows', 'studies indicate', 'experts recommend',
         'peer-reviewed', 'published in', 'data suggests', 'analysis reveals'
@@ -331,11 +301,9 @@ export function calculateSeoMetrics(
     const eeatCount = eeatPhrases.filter(phrase => textLower.includes(phrase)).length;
     metrics.eeatSignals = Math.min(100, eeatCount * 12);
     
-    // Internal link score
     const internalLinks = doc.querySelectorAll('a[href^="/"], a[href*="' + (slug || 'internal') + '"]');
     metrics.internalLinkScore = Math.min(100, internalLinks.length * 5);
     
-    // Schema detection
     const schemaScripts = doc.querySelectorAll('script[type="application/ld+json"]');
     metrics.schemaDetected = schemaScripts.length > 0 || 
         html.includes('itemtype="https://schema.org') ||
@@ -459,13 +427,11 @@ export function injectInternalLinks(
     let modifiedHtml = html;
     let lastLinkPosition = 0;
     
-    // Filter out current URL
     const availableTargets = linkTargets.filter(t => 
         t.url !== currentUrl && 
         !t.url.includes(extractSlugFromUrl(currentUrl))
     );
     
-    // Find insertion points (paragraphs)
     const paragraphRegex = /<p[^>]*>([^<]{100,})<\/p>/gi;
     const paragraphs: Array<{ match: string; text: string; index: number }> = [];
     let match;
@@ -478,27 +444,21 @@ export function injectInternalLinks(
         });
     }
     
-    // Score and select best link placements
     for (const target of availableTargets) {
         if (linksAdded.length >= maxLinks) break;
         
         for (const para of paragraphs) {
-            // Check distance from last link
             if (para.index - lastLinkPosition < minDistanceBetweenLinks) continue;
             
-            // Calculate relevance
             const relevance = calculateLinkRelevance(para.text, target);
             
             if (relevance >= minRelevance) {
-                // Generate anchor text
                 const anchorText = generateAnchorText(para.text, target);
                 
                 if (anchorText && anchorText.split(/\s+/).length >= 3) {
-                    // Check if anchor text exists in paragraph
                     if (para.text.toLowerCase().includes(anchorText.toLowerCase())) {
                         const link = `<a href="${target.url}" title="${escapeHtml(target.title)}">${anchorText}</a>`;
                         
-                        // Replace first occurrence
                         const escapedAnchor = anchorText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                         const anchorRegex = new RegExp(`\\b${escapedAnchor}\\b`, 'i');
                         
@@ -537,19 +497,16 @@ function calculateLinkRelevance(paragraphText: string, target: InternalLinkTarge
     
     let score = 0;
     
-    // Check for title words
     const titleWords = titleLower.split(/\s+/).filter(w => w.length > 3);
     const matchingTitleWords = titleWords.filter(w => textLower.includes(w));
-    score += (matchingTitleWords.length / titleWords.length) * 0.5;
+    score += (matchingTitleWords.length / Math.max(1, titleWords.length)) * 0.5;
     
-    // Check for slug words
     const matchingSlugWords = slugWords.filter(w => w.length > 3 && textLower.includes(w));
     score += (matchingSlugWords.length / Math.max(1, slugWords.length)) * 0.3;
     
-    // Check for keywords if available
     if (target.keywords) {
         const matchingKeywords = target.keywords.filter(k => textLower.includes(k.toLowerCase()));
-        score += (matchingKeywords.length / target.keywords.length) * 0.2;
+        score += (matchingKeywords.length / Math.max(1, target.keywords.length)) * 0.2;
     }
     
     return Math.min(1, score);
@@ -558,7 +515,6 @@ function calculateLinkRelevance(paragraphText: string, target: InternalLinkTarge
 function generateAnchorText(paragraphText: string, target: InternalLinkTarget): string {
     const titleWords = target.title.split(/\s+/);
     
-    // Try to find a 3-5 word phrase from the title that exists in the paragraph
     for (let len = 5; len >= 3; len--) {
         for (let start = 0; start <= titleWords.length - len; start++) {
             const phrase = titleWords.slice(start, start + len).join(' ');
@@ -568,7 +524,6 @@ function generateAnchorText(paragraphText: string, target: InternalLinkTarget): 
         }
     }
     
-    // Fallback: use first 4 words of title
     return titleWords.slice(0, 4).join(' ');
 }
 
@@ -593,11 +548,7 @@ export function runQASwarm(
     const html = contract.htmlContent || '';
     const wordCount = contract.wordCount || countWords(html);
     
-    // ═══════════════════════════════════════════════════════════════════════════
     // CRITICAL RULES
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    // No H1 tags
     const h1Count = (html.match(/<h1/gi) || []).length;
     results.push({
         agent: 'H1 Validator',
@@ -610,7 +561,6 @@ export function runQASwarm(
         fixSuggestion: h1Count > 0 ? 'Remove all H1 tags from content' : undefined
     });
     
-    // Minimum word count
     const minWords = 3000;
     results.push({
         agent: 'Word Count Validator',
@@ -621,7 +571,6 @@ export function runQASwarm(
         fixSuggestion: wordCount < minWords ? `Add ${minWords - wordCount} more words` : undefined
     });
     
-    // HTML content present
     results.push({
         agent: 'Content Validator',
         category: 'critical',
@@ -631,11 +580,7 @@ export function runQASwarm(
         fixSuggestion: html.length < 5000 ? 'Generate more comprehensive content' : undefined
     });
     
-    // ═══════════════════════════════════════════════════════════════════════════
     // SEO RULES
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    // H2 headings
     const h2Count = (html.match(/<h2/gi) || []).length;
     results.push({
         agent: 'H2 Structure',
@@ -646,7 +591,6 @@ export function runQASwarm(
         fixSuggestion: h2Count < 8 ? `Add ${8 - h2Count} more H2 sections` : undefined
     });
     
-    // H3 headings
     const h3Count = (html.match(/<h3/gi) || []).length;
     results.push({
         agent: 'H3 Structure',
@@ -657,7 +601,6 @@ export function runQASwarm(
         fixSuggestion: h3Count < 15 ? 'Add more H3 subsections' : undefined
     });
     
-    // Internal links
     const internalLinkCount = contract.internalLinks?.length || 0;
     results.push({
         agent: 'Internal Links',
@@ -668,11 +611,7 @@ export function runQASwarm(
         fixSuggestion: internalLinkCount < 12 ? 'Add more contextual internal links' : undefined
     });
     
-    // ═══════════════════════════════════════════════════════════════════════════
     // AEO RULES
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    // FAQ section
     const hasFAQ = html.toLowerCase().includes('frequently asked') || 
                    html.includes('FAQPage') ||
                    html.includes('❓');
@@ -685,7 +624,6 @@ export function runQASwarm(
         fixSuggestion: !hasFAQ ? 'Add FAQ section with 7-10 questions' : undefined
     });
     
-    // FAQ count
     const faqCount = contract.faqs?.length || 0;
     results.push({
         agent: 'FAQ Count',
@@ -696,7 +634,6 @@ export function runQASwarm(
         fixSuggestion: faqCount < 7 ? `Add ${7 - faqCount} more FAQ questions` : undefined
     });
     
-    // Quick Answer box
     const hasQuickAnswer = html.toLowerCase().includes('quick answer');
     results.push({
         agent: 'Quick Answer Box',
@@ -707,11 +644,7 @@ export function runQASwarm(
         fixSuggestion: !hasQuickAnswer ? 'Add Quick Answer box at top of content' : undefined
     });
     
-    // ═══════════════════════════════════════════════════════════════════════════
     // GEO RULES
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    // Schema markup
     const hasSchema = html.includes('FAQPage') || 
                       html.includes('itemtype="https://schema.org') ||
                       html.includes('application/ld+json');
@@ -724,7 +657,6 @@ export function runQASwarm(
         fixSuggestion: !hasSchema ? 'Add FAQPage and Article schema' : undefined
     });
     
-    // E-E-A-T signals
     const eeatPhrases = ['according to', 'research shows', 'experts recommend', 'studies indicate'];
     const textLower = stripHtml(html).toLowerCase();
     const eeatCount = eeatPhrases.filter(p => textLower.includes(p)).length;
@@ -737,11 +669,7 @@ export function runQASwarm(
         fixSuggestion: eeatCount < 5 ? 'Add more authority phrases and citations' : undefined
     });
     
-    // ═══════════════════════════════════════════════════════════════════════════
     // ENHANCEMENT RULES
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    // Lists
     const listCount = (html.match(/<ul|<ol/gi) || []).length;
     results.push({
         agent: 'List Elements',
@@ -752,7 +680,6 @@ export function runQASwarm(
         fixSuggestion: listCount < 5 ? 'Add more bulleted/numbered lists' : undefined
     });
     
-    // Tables
     const tableCount = (html.match(/<table/gi) || []).length;
     results.push({
         agent: 'Tables',
@@ -761,6 +688,30 @@ export function runQASwarm(
         score: tableCount >= 2 ? 100 : tableCount * 50,
         feedback: `${tableCount} tables (target: 2+)`,
         fixSuggestion: tableCount < 2 ? 'Add comparison tables for better AEO' : undefined
+    });
+    
+    // YouTube Video Check
+    const hasVideo = html.includes('youtube.com/embed') || html.includes('youtu.be');
+    results.push({
+        agent: 'Video Content',
+        category: 'enhancement',
+        status: hasVideo ? 'passed' : 'warning',
+        score: hasVideo ? 100 : 50,
+        feedback: hasVideo ? 'YouTube video embedded' : 'Consider adding relevant video',
+        fixSuggestion: !hasVideo ? 'Embed a relevant YouTube video' : undefined
+    });
+    
+    // References Check
+    const hasReferences = html.toLowerCase().includes('references') || 
+                          html.toLowerCase().includes('sources') ||
+                          html.includes('📚');
+    results.push({
+        agent: 'References Section',
+        category: 'enhancement',
+        status: hasReferences ? 'passed' : 'warning',
+        score: hasReferences ? 100 : 50,
+        feedback: hasReferences ? 'References section detected' : 'Consider adding references',
+        fixSuggestion: !hasReferences ? 'Add authoritative references section' : undefined
     });
     
     // Calculate overall score
@@ -777,128 +728,25 @@ export function runQASwarm(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🎬 YOUTUBE INTEGRATION
+// 🔧 CLASSNAME UTILITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export async function searchYouTubeVideo(
-    topic: string,
-    serperApiKey: string,
-    options: { minViews?: number } = {},
-    log?: (msg: string) => void
-): Promise<YouTubeSearchResult> {
-    const { minViews = 10000 } = options;
-    
-    log?.(`   🎬 Searching YouTube for: "${topic.substring(0, 40)}..."`);
-    
-    try {
-        const response = await fetch('https://google.serper.dev/videos', {
-            method: 'POST',
-            headers: {
-                'X-API-KEY': serperApiKey,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                q: `${topic} tutorial guide`,
-                num: 5
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Serper API error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const videos = data.videos || [];
-        
-        // Find best video
-        for (const video of videos) {
-            if (video.link?.includes('youtube.com') || video.link?.includes('youtu.be')) {
-                const videoId = extractYouTubeVideoId(video.link);
-                
-                if (videoId) {
-                    const videoData: YouTubeVideoData = {
-                        videoId,
-                        title: video.title || 'Video',
-                        channel: video.channel || 'Unknown',
-                        views: parseInt(video.views?.replace(/[^0-9]/g, '') || '0'),
-                        duration: video.duration,
-                        thumbnailUrl: video.imageUrl || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                        embedUrl: `https://www.youtube.com/embed/${videoId}`,
-                        publishedAt: video.date
-                    };
-                    
-                    if (videoData.views >= minViews || videos.indexOf(video) === 0) {
-                        log?.(`   ✅ Found video: "${videoData.title.substring(0, 40)}..." (${videoData.views.toLocaleString()} views)`);
-                        return {
-                            video: videoData,
-                            source: 'serper',
-                            searchQuery: topic
-                        };
-                    }
-                }
-            }
-        }
-        
-        log?.(`   ⚠️ No suitable YouTube video found`);
-        return { video: null, source: 'serper', searchQuery: topic };
-        
-    } catch (error: any) {
-        log?.(`   ❌ YouTube search failed: ${error.message}`);
-        return { video: null, source: 'fallback', searchQuery: topic };
-    }
-}
-
-function extractYouTubeVideoId(url: string): string | null {
-    if (!url) return null;
-    
-    const patterns = [
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-        /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
-    ];
-    
-    for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match) return match[1];
-    }
-    
-    return null;
-}
-
-export function generateYouTubeEmbed(video: YouTubeVideoData, topic: string): string {
-    return `
-<div style="margin: 48px 0 !important;">
-    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important; border-radius: 20px !important; overflow: hidden !important; border: 1px solid rgba(255,255,255,0.08) !important;">
-        <div style="padding: 20px !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important;">
-            <div style="display: flex !important; align-items: center !important; gap: 12px !important;">
-                <div style="width: 44px !important; height: 44px !important; background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%) !important; border-radius: 12px !important; display: flex !important; align-items: center !important; justify-content: center !important;">
-                    <span style="color: white !important; font-size: 18px !important;">▶</span>
-                </div>
-                <div>
-                    <div style="color: #f1f5f9 !important; font-size: 14px !important; font-weight: 700 !important;">Video Guide</div>
-                    <div style="color: #64748b !important; font-size: 11px !important;">${escapeHtml(video.channel)} • ${video.views.toLocaleString()} views</div>
-                </div>
-            </div>
-        </div>
-        <div style="position: relative !important; padding-bottom: 56.25% !important; height: 0 !important;">
-            <iframe 
-                style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: none !important;"
-                src="${video.embedUrl}?rel=0"
-                title="${escapeHtml(video.title)}"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
-        </div>
-        <div style="padding: 16px 20px !important; background: rgba(0,0,0,0.2) !important;">
-            <p style="color: #94a3b8 !important; font-size: 12px !important; margin: 0 !important; line-height: 1.5 !important;">
-                ${escapeHtml(video.title)}
-            </p>
-        </div>
-    </div>
-</div>`;
+export function cn(...classes: (string | boolean | undefined | null)[]): string {
+    return classes.filter(Boolean).join(' ');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 📤 EXPORTS
+// 📊 NUMBER FORMATTING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function formatNumber(num: number): string {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📤 DEFAULT EXPORT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default {
@@ -919,6 +767,6 @@ export default {
     analyzeExistingContent,
     injectInternalLinks,
     runQASwarm,
-    searchYouTubeVideo,
-    generateYouTubeEmbed
+    cn,
+    formatNumber
 };
