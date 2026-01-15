@@ -1864,16 +1864,7 @@ export {
     validateResponseCompleteness,
     healJSON,
     buildSlimSystemPrompt,
-    createQuickAnswerBox,
-    createProTipBox,
-    createWarningBox,
-    createKeyTakeaways,
-    createFAQAccordion,
-    createReferencesSection,
-    createYouTubeEmbed,
-    searchYouTubeVideo,
-    discoverReferences,
-    THEME_ADAPTIVE_CSS
+
 };
 
 export const VALID_GEMINI_MODELS: Record<string, string> = {
