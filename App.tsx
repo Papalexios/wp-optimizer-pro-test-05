@@ -1319,31 +1319,33 @@ try {
 
             try {
                 // Use the staged pipeline (generateEnhanced)
-                const { contract: _rawContract } = await orchestrator.generateEnhanced(
-                    synthesisConfig,
-                    log,
-                                        (progress: StageProgress) => {
-                        store.setStageProgress(progress);
-                        // Update progress UI
-                        if (progress.stage === 'outline') {
-                            updateProgress('outline_generation');
-                        } else if (progress.stage === 'sections') {
-                            updateProgress('section_drafts', { 
-                                sectionsCompleted: progress.sectionsCompleted || 0, 
-                                totalSections: progress.totalSections || 0 
-                            });
-                        } else if (progress.stage === 'youtube') {
-                            updateProgress('youtube_integration');
-                        } else if (progress.stage === 'references') {
-                            updateProgress('reference_discovery');
-                        } else if (progress.stage === 'merge') {
-                            updateProgress('merge_content');
-                        } else if (progress.stage === 'polish') {
-                            updateProgress('final_polish');
-                        }
+const { contract: _rawContract } = await orchestrator.generateEnhanced(
+    synthesisConfig,
+    log,
+    (progress: StageProgress) => {
+        if (!progress) return;  // ✅ ADD THIS SAFETY CHECK
+        
+        store.setStageProgress(progress);
+        
+        if (progress.stage === 'outline') {
+            updateProgress('outline_generation');
+        } else if (progress.stage === 'sections') {
+            updateProgress('section_drafts', { 
+                sectionsCompleted: progress.sectionsCompleted || 0, 
+                totalSections: progress.totalSections || 0 
+            });
+        } else if (progress.stage === 'youtube') {
+            updateProgress('youtube_integration');
+        } else if (progress.stage === 'references') {
+            updateProgress('reference_discovery');
+        } else if (progress.stage === 'merge') {
+            updateProgress('merge_content');
+        } else if (progress.stage === 'polish') {
+            updateProgress('final_polish');
+        }
+    }
+);
 
-                    }
-                );
 
                 // 🔥 CRITICAL: Deep clone to avoid Immer freeze
                 let contract: ContentContract = deepClone(_rawContract);
