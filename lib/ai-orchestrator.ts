@@ -861,77 +861,31 @@ export function injectInternalLinksDistributed(
     log: LogFunction
 ): { html: string; linksAdded: InternalLinkResult[]; totalLinks: number } {
     
-    // ═══════════════════════════════════════════════════════════════
-    // DEBUG: Log all inputs
-    // ═══════════════════════════════════════════════════════════════
     log(`   🔗 ═══════════════════════════════════════════════════════`);
     log(`   🔗 INTERNAL LINK INJECTION — DEBUG MODE`);
     log(`   🔗 ═══════════════════════════════════════════════════════`);
     log(`   🔗 Input validation:`);
-    log(`      → html exists: ${!!html}`);
     log(`      → html length: ${html?.length || 0} chars`);
-    log(`      → linkTargets exists: ${!!linkTargets}`);
-    log(`      → linkTargets type: ${typeof linkTargets}`);
-    log(`      → linkTargets is array: ${Array.isArray(linkTargets)}`);
     log(`      → linkTargets length: ${linkTargets?.length || 0}`);
-    log(`      → currentUrl: "${currentUrl || '(empty)'}"`);
     
-    // Validate inputs
-    if (!html) {
-        log(`   ❌ ABORT: html is empty or undefined`);
+    if (!html || !linkTargets || !Array.isArray(linkTargets) || linkTargets.length === 0) {
+        log(`   ❌ ABORT: Invalid inputs`);
         return { html: html || '', linksAdded: [], totalLinks: 0 };
     }
     
-    if (!linkTargets) {
-        log(`   ❌ ABORT: linkTargets is undefined`);
-        return { html, linksAdded: [], totalLinks: 0 };
-    }
-    
-    if (!Array.isArray(linkTargets)) {
-        log(`   ❌ ABORT: linkTargets is not an array (type: ${typeof linkTargets})`);
-        return { html, linksAdded: [], totalLinks: 0 };
-    }
-    
-    if (linkTargets.length === 0) {
-        log(`   ⚠️ ABORT: linkTargets array is empty`);
-        return { html, linksAdded: [], totalLinks: 0 };
-    }
-    
-    // Log first 5 link targets for debugging
-    log(`   🔗 First 5 link targets:`);
-    linkTargets.slice(0, 5).forEach((target, i) => {
-        log(`      ${i + 1}. "${target.title?.substring(0, 40) || 'NO TITLE'}..." → ${target.url?.substring(0, 50) || 'NO URL'}`);
-    });
-    
     const linksAdded: InternalLinkResult[] = [];
     
-    // Filter out current URL and limit targets
     const availableTargets = linkTargets.filter(t => {
-        if (!t || !t.url || !t.title) {
-            log(`      ⚠️ Skipping invalid target: ${JSON.stringify(t)?.substring(0, 100)}`);
-            return false;
-        }
-        if (currentUrl && t.url === currentUrl) {
-            log(`      ⚠️ Skipping current URL: ${t.url}`);
-            return false;
-        }
-        if (currentUrl && t.url.includes(extractSlugFromUrl(currentUrl))) {
-            log(`      ⚠️ Skipping URL with current slug: ${t.url}`);
-            return false;
-        }
+        if (!t?.url || !t?.title) return false;
+        if (currentUrl && t.url === currentUrl) return false;
         return true;
     }).slice(0, 30);
     
-    log(`   🔗 Available targets after filtering: ${availableTargets.length}`);
+    log(`   🔗 Available targets: ${availableTargets.length}`);
     
     if (availableTargets.length === 0) {
-        log(`   ⚠️ ABORT: No valid targets after filtering`);
         return { html, linksAdded: [], totalLinks: 0 };
     }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // Split content by H2 sections
-    // ═══════════════════════════════════════════════════════════════
     
     const sectionSplitRegex = /(<h2[^>]*>)/gi;
     const parts = html.split(sectionSplitRegex);
@@ -942,27 +896,14 @@ export function injectInternalLinksDistributed(
     let targetIndex = 0;
     let lastLinkWordPos = 0;
     let currentWordPos = 0;
-    let sectionsProcessed = 0;
-    let paragraphsFound = 0;
-    let anchorsAttempted = 0;
-    let anchorsMatched = 0;
     
     const processedParts = parts.map((part, partIndex) => {
-        // Skip H2 tags themselves and first part (intro)
-        if (part.match(/<h2/i)) {
+        if (part.match(/<h2/i) || partIndex === 0) {
             currentWordPos += countWords(part);
             return part;
         }
-        
-        if (partIndex === 0) {
-            currentWordPos += countWords(part);
-            return part;
-        }
-        
-        sectionsProcessed++;
         
         if (totalLinksAdded >= LINK_CONFIG.MAX_TOTAL) {
-            log(`      ⚠️ Section ${sectionsProcessed}: Max total links (${LINK_CONFIG.MAX_TOTAL}) reached`);
             currentWordPos += countWords(part);
             return part;
         }
@@ -970,54 +911,46 @@ export function injectInternalLinksDistributed(
         let sectionLinksAdded = 0;
         let processedPart = part;
         
-        // Find paragraphs with 80+ characters (good for linking)
-        const paraRegex = /<p[^>]*>([^<]{80,})<\/p>/gi;
+        // ✅ FIXED REGEX — Now matches paragraphs with HTML inside
+        const paraRegex = /<p[^>]*>([\s\S]{80,}?)<\/p>/gi;
         let match;
-        const paragraphs: Array<{ full: string; text: string; pos: number }> = [];
+        const paragraphs: Array<{ full: string; text: string; plainText: string; pos: number }> = [];
         
         while ((match = paraRegex.exec(part)) !== null) {
-            paragraphs.push({ full: match[0], text: match[1], pos: match.index });
+            // ✅ Extract plain text for anchor matching
+            const plainText = match[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            paragraphs.push({ 
+                full: match[0], 
+                text: match[1], 
+                plainText,  // ✅ Added plain text version
+                pos: match.index 
+            });
         }
         
-        paragraphsFound += paragraphs.length;
-        
-        if (paragraphs.length === 0) {
-            log(`      ℹ️ Section ${sectionsProcessed}: No suitable paragraphs found`);
-        }
+        log(`      → Section ${partIndex}: Found ${paragraphs.length} paragraphs`);
         
         for (const para of paragraphs) {
-            if (sectionLinksAdded >= LINK_CONFIG.MAX_PER_SECTION) {
-                break;
-            }
-            if (totalLinksAdded >= LINK_CONFIG.MAX_TOTAL) {
-                break;
-            }
-            if (targetIndex >= availableTargets.length) {
-                log(`      ⚠️ No more targets available (used ${targetIndex})`);
-                break;
-            }
+            if (sectionLinksAdded >= LINK_CONFIG.MAX_PER_SECTION) break;
+            if (totalLinksAdded >= LINK_CONFIG.MAX_TOTAL) break;
+            if (targetIndex >= availableTargets.length) break;
             
             const paraWordPos = currentWordPos + countWords(part.substring(0, para.pos));
             
-            // Check distance from last link
             if (paraWordPos - lastLinkWordPos < LINK_CONFIG.MIN_WORDS_BETWEEN && linksAdded.length > 0) {
                 continue;
             }
             
             const target = availableTargets[targetIndex];
-            anchorsAttempted++;
             
-            // Try to find anchor text
-            const anchorText = findAnchorTextWithDebug(para.text, target, log, anchorsAttempted <= 3);
+            // ✅ Use plainText for anchor matching
+            const anchorText = findAnchorTextWithDebug(para.plainText, target, log, totalLinksAdded < 3);
             
             if (anchorText && anchorText.length >= 4) {
-                // Verify anchor exists in paragraph
-                if (para.text.toLowerCase().includes(anchorText.toLowerCase())) {
-                    anchorsMatched++;
-                    
+                // ✅ Check in plainText, but replace in original text
+                if (para.plainText.toLowerCase().includes(anchorText.toLowerCase())) {
                     const link = `<a href="${escapeHtml(target.url)}" title="${escapeHtml(target.title)}">${anchorText}</a>`;
                     const escapedAnchor = anchorText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const anchorRegex = new RegExp(`\\b${escapedAnchor}\\b`, 'i');
+                    const anchorRegex = new RegExp(`(?<!<[^>]*)\\b${escapedAnchor}\\b(?![^<]*>)`, 'i');
                     
                     const newPara = para.full.replace(anchorRegex, link);
                     
@@ -1045,31 +978,7 @@ export function injectInternalLinksDistributed(
         return processedPart;
     });
     
-    // ═══════════════════════════════════════════════════════════════
-    // Final summary
-    // ═══════════════════════════════════════════════════════════════
-    
-    log(`   🔗 ═══════════════════════════════════════════════════════`);
-    log(`   🔗 INTERNAL LINK INJECTION — SUMMARY`);
-    log(`   🔗 ═══════════════════════════════════════════════════════`);
-    log(`      → Sections processed: ${sectionsProcessed}`);
-    log(`      → Paragraphs found: ${paragraphsFound}`);
-    log(`      → Anchors attempted: ${anchorsAttempted}`);
-    log(`      → Anchors matched: ${anchorsMatched}`);
-    log(`      → Links injected: ${totalLinksAdded}`);
-    
-    if (totalLinksAdded === 0) {
-        log(`   ⚠️ NO LINKS WERE INJECTED!`);
-        log(`      Possible causes:`);
-        log(`      1. No matching anchor text found in content`);
-        log(`      2. Link target titles don't match content words`);
-        log(`      3. Paragraphs too short (need 80+ chars)`);
-    } else {
-        log(`   ✅ Successfully injected ${totalLinksAdded} internal links`);
-        linksAdded.forEach((link, i) => {
-            log(`      ${i + 1}. "${link.anchorText}" → ${link.url.substring(0, 50)}...`);
-        });
-    }
+    log(`   🔗 RESULT: ${totalLinksAdded} links injected`);
     
     return {
         html: processedParts.join(''),
@@ -1077,6 +986,8 @@ export function injectInternalLinksDistributed(
         totalLinks: totalLinksAdded
     };
 }
+
+    
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🔍 ANCHOR TEXT FINDER — WITH DEBUG
@@ -1252,18 +1163,35 @@ function findAnchorTextWithDebug(
         }
     }
     
+      // ═══════════════════════════════════════════════════════════════
+    // STRATEGY 5 (NEW): Generic contextual anchor from paragraph
+    // Find any 2-3 word phrase that's semantically relevant
+    // ═══════════════════════════════════════════════════════════════
+    
+    // Find common topic-related phrases in paragraph
+    const genericPhrases = text.match(/\b([a-zA-Z]{4,}(?:\s+[a-zA-Z]{4,}){1,2})\b/g);
+    if (genericPhrases && genericPhrases.length > 0) {
+        // Filter to reasonable anchor lengths
+        const validPhrases = genericPhrases.filter(p => 
+            p.length >= 8 && 
+            p.length <= 35 && 
+            !stopWords.has(p.split(' ')[0].toLowerCase())
+        );
+        
+        if (validPhrases.length > 0) {
+            // Pick a phrase from the middle of the paragraph (better UX)
+            const midIndex = Math.floor(validPhrases.length / 2);
+            const anchor = validPhrases[midIndex];
+            if (verbose) log(`         → Strategy 5 MATCH (generic): "${anchor}"`);
+            return anchor;
+        }
+    }
+    
     if (verbose) log(`         → No anchor match found`);
     
     // NO FALLBACK — Return empty to prevent bad anchors
     return '';
 }
-
-// Legacy function for compatibility
-function findAnchorText(text: string, target: InternalLinkTarget): string {
-    return findAnchorTextWithDebug(text, target, () => {}, false);
-}
-
-
 
 
 
@@ -1935,23 +1863,14 @@ OUTPUT: HTML only, starting with <h2>Conclusion</h2>.`;
         
         log(`   🔍 Starting parallel discovery...`);
         
-const youtubePromise = config.apiKeys?.serper ? (async () => {
-    try {
-        log(`   🎬 Searching YouTube for: "${config.topic.substring(0, 50)}..."`);
-        const foundVideo = await searchYouTubeVideo(config.topic, config.apiKeys.serper, log);
-        
-        if (foundVideo && foundVideo.videoId && foundVideo.videoId.length === 11) {
-            youtubeVideo = foundVideo;
-            log(`   ✅ YouTube FOUND: "${foundVideo.title.substring(0, 40)}..." (ID: ${foundVideo.videoId}, ${foundVideo.views?.toLocaleString() || 0} views)`);
-        } else {
-            youtubeVideo = null;
-            log(`   ⚠️ YouTube search returned no valid video (result=${!!foundVideo}, videoId=${foundVideo?.videoId || 'missing'})`);
-        }
-    } catch (e: any) {
-        youtubeVideo = null;
-        log(`   ❌ YouTube search FAILED: ${e.message}`);
-    }
-})() : Promise.resolve();
+
+// ✅ NEW PATTERN (explicit return):
+const youtubePromise = config.apiKeys?.serper 
+    ? searchYouTubeVideo(config.topic, config.apiKeys.serper, log)
+        .then(video => { youtubeVideo = video; return video; })
+        .catch(e => { log(`   ❌ YouTube error: ${e.message}`); return null; })
+    : Promise.resolve(null);
+
 
         
         const referencesPromise = config.apiKeys?.serper ? (async () => {
