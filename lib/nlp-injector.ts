@@ -154,33 +154,35 @@ export function analyzeNLPCoverage(
     let totalWeight = 0;
     let usedWeight = 0;
 
-    for (const term of terms) {
-        const termLower = term.term.toLowerCase();
-        const escaped = termLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
-        
-        const positions: number[] = [];
-        let match;
-        while ((match = regex.exec(textContent)) !== null) {
-            positions.push(match.index);
-        }
-        
-        const count = positions.length;
-        const weight = term.importance || 50;
-        totalWeight += weight;
-        
-        if (count > 0) {
-            usedTerms.push({ ...term, count, positions });
-            usedWeight += weight;
-        } else {
-            missingTerms.push(term);
-        }
+// Around line 180-190 in lib/nlp-injector.ts
+for (const term of terms) {
+    const termLower = term.term.toLowerCase();
+    const escaped = termLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+    
+    const positions: number[] = [];
+    let match;
+    while ((match = regex.exec(textContent)) !== null) {
+        positions.push(match.index);
     }
+    
+    const count = positions.length;
+    const weight = term.importance || 50;
+    totalWeight += weight;
+    
+    if (count > 0) {
+        usedTerms.push({ ...term, count, positions });
+        usedWeight += weight;
+    } else {
+        missingTerms.push(term);
+    }
+}
 
-    // Categorize missing terms
-    const criticalMissing = missingTerms.filter(t => (t.importance || 50) >= 80);
-    const headerMissing = missingTerms.filter(t => t.type === 'header' || t.type === 'title');
-    const bodyMissing = missingTerms.filter(t => t.type === 'basic' || t.type === 'extended');
+// Categorize missing terms — FIXED LINE 183
+const criticalMissing = missingTerms.filter(t => (t.importance || 50) >= 80);
+const headerMissing = missingTerms.filter(t => t.type === 'header' || t.type === 'title');
+const bodyMissing = missingTerms.filter(t => t.type === 'body');  // ← FIXED: was 'basic' || 'extended'
+
 
     const score = terms.length > 0 
         ? Math.round((usedTerms.length / terms.length) * 100)
@@ -698,3 +700,4 @@ export default {
     createNLPEnrichedCallout,
     generateNLPOptimizedFAQs,
 };
+
