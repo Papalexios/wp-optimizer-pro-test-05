@@ -19,17 +19,7 @@
 // ✅ Correct import for @google/genai
 import { GoogleGenAI } from '@google/genai';
 
-// Usage in your code should work as-is:
-const ai = new GoogleGenAI({ apiKey: apiKeys.google });
-const response = await ai.models.generateContent({
-    model: model || 'gemini-2.5-flash-preview-05-20',
-    contents: userPrompt,
-    config: {
-        systemInstruction: systemPrompt,
-        temperature,
-        maxOutputTokens: maxTokens
-    }
-});
+
 import {
     ContentContract,
     GenerateConfig,
@@ -2003,11 +1993,15 @@ OUTPUT JSON:
 
         onProgress?.({ stage: 'validation', progress: 100, message: 'Complete!' });
 
-        const finalContract: ContentContract = {
-            ...rawContract,
-            htmlContent: assembledContent,
-            wordCount: countWords(assembledContent)
-        };
+if (!rawContract) {
+    throw new Error('Content generation failed - no contract');
+}
+
+const finalContract: ContentContract = {
+    ...rawContract,
+    htmlContent: assembledContent,
+    wordCount: countWords(assembledContent)
+};
 
         const totalTime = Date.now() - startTime;
 
