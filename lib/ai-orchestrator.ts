@@ -1993,16 +1993,16 @@ OUTPUT JSON:
 
         onProgress?.({ stage: 'validation', progress: 100, message: 'Complete!' });
 
-if (!rawContract) {
-    throw new Error('Content generation failed - no contract data');
-}
+        // CRITICAL FIX: Explicit null check right before usage
+        if (!rawContract) {
+            throw new Error('Content generation failed - rawContract is null');
+        }
 
-const finalContract: ContentContract = {
-    ...rawContract,
-    htmlContent: assembledContent,
-    wordCount: countWords(assembledContent)
-};
-
+        const finalContract: ContentContract = {
+            ...rawContract,
+            htmlContent: assembledContent,
+            wordCount: countWords(assembledContent)
+        };
 
         const totalTime = Date.now() - startTime;
 
