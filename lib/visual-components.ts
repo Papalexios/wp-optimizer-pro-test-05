@@ -1,70 +1,19 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WP OPTIMIZER PRO v33.0 — DEFINITIVE ENTERPRISE AI ORCHESTRATOR
+// WP OPTIMIZER PRO v33.0 — ENTERPRISE VISUAL COMPONENTS LIBRARY
 // ═══════════════════════════════════════════════════════════════════════════════
 // 
-// ALL BUGS FIXED:
-// ✅ YOUTUBE: Explicit capture + debug logging + guaranteed embed
-// ✅ VISUALS: High-frequency injection + content breathing
-// ✅ LINKS: Semantic NLP matching + bridge sentence fallback
-// ✅ CSS: 100% inline styles (cannot be overridden by WP themes)
+// BULLETPROOF DESIGN SYSTEM:
+// ✅ 100% Inline Styles — Cannot be overridden by WordPress themes
+// ✅ !important on EVERY property — Guaranteed visual consistency
+// ✅ 25+ Premium Components — Complete enterprise visual library
+// ✅ Input Validation — Prevents rendering broken/empty components
+// ✅ Mobile Responsive — Flexbox with wrap for all screen sizes
+// ✅ TypeScript First — Full type definitions and safety
+// ✅ Schema.org Markup — SEO-optimized structured data
+// ✅ Zero JS Dependencies — Native HTML5 interactivity
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { GoogleGenAI } from '@google/genai';
-import {
-    ContentContract,     
-    GenerateConfig, 
-    InternalLinkTarget,
-    InternalLinkResult,
-    ValidatedReference
-} from '../types';
-
-// Import bulletproof visual components (100% inline styles)
-import {
-    THEME_ADAPTIVE_CSS,
-    createQuickAnswerBox,
-    createProTipBox,
-    createWarningBox,
-    createExpertQuoteBox,
-    createHighlightBox,
-    createCalloutBox,
-    createStatisticsBox,
-    createDataTable,
-    createChecklistBox,
-    createStepByStepBox,
-    createComparisonTable,
-    createDefinitionBox,
-    createKeyTakeaways,
-    createFAQAccordion,
-    createYouTubeEmbed,
-    createReferencesSection,
-    createNumberedBox,
-    createIconGridBox,
-    createTimelineBox,
-    createProgressTracker,
-    escapeHtml,
-    generateUniqueId
-} from './visual-components';
-
-// Re-export visual components
-export {
-    THEME_ADAPTIVE_CSS,
-    createQuickAnswerBox,
-    createProTipBox,
-    createWarningBox,
-    createExpertQuoteBox,
-    createHighlightBox,
-    createCalloutBox,
-    createStatisticsBox,
-    createDataTable,
-    createChecklistBox,
-    createStepByStepBox,
-    createComparisonTable,
-    createDefinitionBox,
-    createKeyTakeaways,
-    createFAQAccordion,
-    createYouTubeEmbed,
-    createReferencesSection
-};
+export const VISUAL_COMPONENTS_VERSION = "33.0.0";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 📊 TYPE DEFINITIONS
@@ -91,981 +40,944 @@ export interface DiscoveredReference {
     favicon?: string;
 }
 
-export interface StageProgress {
-    stage: 'discovery' | 'generation' | 'enrichment' | 'finalization' | 'complete';
-    progress: number;
-    message: string;
+export type CalloutType = 'info' | 'success' | 'warning' | 'error';
+
+export interface StatItem {
+    value: string;
+    label: string;
+    icon?: string;
 }
 
-export interface GenerationResult {
-    contract: ContentContract;
-    generationMethod: 'staged' | 'single-shot';
-    attempts: number;
-    totalTime: number;
-    youtubeVideo?: YouTubeVideoData;
-    references?: DiscoveredReference[];
+export interface StepItem {
+    title: string;
+    description: string;
 }
 
-type LogFunction = (msg: string, progress?: number) => void;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📌 VERSION & CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════
-
-export const AI_ORCHESTRATOR_VERSION = "33.0.0";
-
-const CONFIG = {
-    TIMEOUT_SINGLE_SHOT: 180000,
-    TIMEOUT_YOUTUBE: 25000,
-    TIMEOUT_REFERENCES: 30000,
-    TARGET_WORDS: 4500,
-    MAX_LINKS: 15,
-    MAX_LINKS_PER_SECTION: 2,
-    MIN_WORDS_BETWEEN_LINKS: 80,
-    VISUAL_EVERY_N_PARAGRAPHS: 2,
-    MAX_RETRIES: 3
-} as const;
-
-const currentYear = new Date().getFullYear();
-export const CONTENT_YEAR = currentYear;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔧 UTILITIES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function countWords(text: string): number {
-    if (!text) return 0;
-    return text.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(w => w.length > 0).length;
+export interface FAQItem {
+    question: string;
+    answer: string;
 }
 
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export interface IconGridItem {
+    icon: string;
+    title: string;
+    description: string;
+}
+
+export interface TimelineEvent {
+    time: string;
+    title: string;
+    description: string;
+}
+
+export interface TableRow {
+    [key: string]: string;
+}
+
+export interface ProsConsItem {
+    pros: string[];
+    cons: string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔧 UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function escapeHtml(str: string): string {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+export function generateUniqueId(): string {
+    return `wpo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function truncate(str: string, max: number): string {
+    if (!str || str.length <= max) return str || '';
+    return str.substring(0, max - 3) + '...';
+}
+
+function isValidArray<T>(arr: T[] | undefined | null): arr is T[] {
+    return Array.isArray(arr) && arr.length > 0;
+}
+
+function isValidString(str: string | undefined | null): str is string {
+    return typeof str === 'string' && str.trim().length > 0;
 }
 
 function extractDomain(url: string): string {
-    try { return new URL(url).hostname.replace('www.', ''); } 
-    catch { return 'source'; }
-}
-
-function extractSourceName(url: string): string {
     try {
-        const hostname = new URL(url).hostname.replace('www.', '');
-        const map: Record<string, string> = {
-            'nytimes.com': 'NY Times', 'bbc.com': 'BBC', 'forbes.com': 'Forbes',
-            'reuters.com': 'Reuters', 'bloomberg.com': 'Bloomberg', 'cnn.com': 'CNN',
-            'wikipedia.org': 'Wikipedia', 'hbr.org': 'HBR', 'nih.gov': 'NIH'
-        };
-        return map[hostname] || hostname.split('.')[0].charAt(0).toUpperCase() + hostname.split('.')[0].slice(1);
-    } catch { return 'Source'; }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🎬 YOUTUBE DISCOVERY — GUARANTEED TO WORK
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function extractYouTubeVideoId(url: string): string | null {
-    if (!url) return null;
-    const patterns = [
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-        /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
-    ];
-    for (const p of patterns) {
-        const m = url.match(p);
-        if (m?.[1]) return m[1];
-    }
-    return null;
-}
-
-function parseViewCount(v: string | number | undefined): number {
-    if (!v) return 0;
-    if (typeof v === 'number') return v;
-    const s = v.toString().toLowerCase().replace(/,/g, '');
-    if (s.includes('m')) return Math.round(parseFloat(s) * 1000000);
-    if (s.includes('k')) return Math.round(parseFloat(s) * 1000);
-    return parseInt(s.replace(/\D/g, '')) || 0;
-}
-
-export async function searchYouTubeVideo(
-    topic: string,
-    serperApiKey: string,
-    log: LogFunction
-): Promise<YouTubeVideoData | null> {
-    log(`   🎬 YOUTUBE SEARCH STARTING...`);
-    log(`      → Topic: "${topic.substring(0, 50)}..."`);
-    log(`      → API Key: ${serperApiKey ? '✅ PROVIDED' : '❌ MISSING'}`);
-    
-    if (!serperApiKey) {
-        log(`   ❌ YOUTUBE ABORTED: No Serper API key`);
-        return null;
-    }
-    
-    const queries = [
-        `${topic} tutorial ${currentYear}`,
-        `${topic} guide how to`,
-        `best ${topic} explained`
-    ];
-    
-    const videos: YouTubeVideoData[] = [];
-    const seen = new Set<string>();
-    
-    for (const query of queries) {
-        try {
-            log(`   🔍 Query: "${query.substring(0, 40)}..."`);
-            
-            const res = await fetch('https://google.serper.dev/videos', {
-                method: 'POST',
-                headers: { 'X-API-KEY': serperApiKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ q: query, gl: 'us', hl: 'en', num: 15 })
-            });
-            
-            if (!res.ok) {
-                log(`   ⚠️ Serper error: ${res.status}`);
-                continue;
-            }
-            
-            const data = await res.json();
-            log(`      → Results: ${data.videos?.length || 0}`);
-            
-            for (const v of (data.videos || [])) {
-                if (!v.link?.includes('youtube')) continue;
-                
-                const videoId = extractYouTubeVideoId(v.link);
-                if (!videoId || seen.has(videoId)) continue;
-                seen.add(videoId);
-                
-                const views = parseViewCount(v.views);
-                if (views < 500) continue;
-                
-                // Score calculation
-                const titleLower = (v.title || '').toLowerCase();
-                const topicWords = topic.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-                const matches = topicWords.filter(w => titleLower.includes(w)).length;
-                let score = 40 + (matches / Math.max(topicWords.length, 1)) * 35;
-                if (views >= 1000000) score += 20;
-                else if (views >= 100000) score += 10;
-                else if (views >= 10000) score += 5;
-                
-                videos.push({
-                    videoId,
-                    title: v.title || 'Video',
-                    channel: v.channel || 'Channel',
-                    views,
-                    duration: v.duration,
-                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                    embedUrl: `https://www.youtube.com/embed/${videoId}`,
-                    relevanceScore: Math.min(100, score)
-                });
-            }
-            
-            if (videos.length >= 3) break;
-        } catch (e: any) {
-            log(`   ⚠️ Error: ${e.message}`);
-        }
-        await sleep(200);
-    }
-    
-    videos.sort((a, b) => b.relevanceScore! - a.relevanceScore!);
-    
-    if (videos.length === 0) {
-        log(`   ❌ No YouTube videos found`);
-        return null;
-    }
-    
-    const best = videos[0];
-    log(`   ✅ YOUTUBE FOUND:`);
-    log(`      → videoId: ${best.videoId}`);
-    log(`      → title: "${best.title.substring(0, 45)}..."`);
-    log(`      → views: ${best.views.toLocaleString()}`);
-    log(`      → score: ${best.relevanceScore}`);
-    
-    return best;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📚 REFERENCE DISCOVERY
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const AUTHORITY_DOMAINS = [
-    '.gov', '.edu', 'nih.gov', 'cdc.gov', 'who.int', 'mayoclinic.org',
-    'nature.com', 'science.org', 'reuters.com', 'bbc.com', 'nytimes.com',
-    'forbes.com', 'hbr.org', 'wikipedia.org', 'investopedia.com', 'statista.com'
-];
-
-function getAuthorityScore(url: string): number {
-    const u = url.toLowerCase();
-    if (u.includes('.gov') || u.includes('.edu')) return 95;
-    if (AUTHORITY_DOMAINS.some(d => u.includes(d))) return 85;
-    return u.startsWith('https://') ? 55 : 40;
-}
-
-export async function discoverReferences(
-    topic: string,
-    serperApiKey: string,
-    options: { targetCount?: number } = {},
-    log: LogFunction
-): Promise<DiscoveredReference[]> {
-    const { targetCount = 10 } = options;
-    
-    log(`   📚 REFERENCE DISCOVERY...`);
-    
-    if (!serperApiKey) {
-        log(`   ❌ No Serper API key`);
-        return [];
-    }
-    
-    const refs: DiscoveredReference[] = [];
-    const seen = new Set<string>();
-    const skipDomains = ['youtube.com', 'facebook.com', 'twitter.com', 'instagram.com', 'reddit.com', 'pinterest.com'];
-    
-    const queries = [
-        `${topic} research statistics`,
-        `${topic} expert guide`,
-        `${topic} site:edu OR site:gov`
-    ];
-    
-    for (const q of queries) {
-        if (refs.length >= targetCount) break;
-        
-        try {
-            const res = await fetch('https://google.serper.dev/search', {
-                method: 'POST',
-                headers: { 'X-API-KEY': serperApiKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ q, gl: 'us', hl: 'en', num: 10 })
-            });
-            
-            if (!res.ok) continue;
-            const data = await res.json();
-            
-            for (const r of (data.organic || [])) {
-                if (!r.link || !r.title) continue;
-                if (skipDomains.some(d => r.link.includes(d))) continue;
-                if (seen.has(r.link)) continue;
-                seen.add(r.link);
-                
-                const score = getAuthorityScore(r.link);
-                if (score < 50) continue;
-                
-                const yearMatch = (r.title + ' ' + (r.snippet || '')).match(/\b(20[1-2]\d)\b/);
-                
-                refs.push({
-                    url: r.link,
-                    title: r.title,
-                    source: extractSourceName(r.link),
-                    snippet: r.snippet,
-                    year: yearMatch?.[1],
-                    authorityScore: score,
-                    favicon: `https://www.google.com/s2/favicons?domain=${extractDomain(r.link)}&sz=32`
-                });
-            }
-        } catch {}
-        await sleep(200);
-    }
-    
-    const sorted = refs.sort((a, b) => (b.authorityScore || 0) - (a.authorityScore || 0)).slice(0, targetCount);
-    log(`   ✅ Found ${sorted.length} references`);
-    return sorted;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🧠 SEMANTIC ANCHOR MATCHING — IMPROVED
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const STOP_WORDS = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
-    'with', 'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has',
-    'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might',
-    'this', 'that', 'these', 'those', 'what', 'which', 'who', 'how', 'why',
-    'your', 'you', 'our', 'we', 'they', 'them', 'their', 'its', 'it',
-    'very', 'really', 'just', 'only', 'also', 'so', 'too', 'more', 'most',
-    'best', 'top', 'guide', 'complete', 'ultimate', 'tips', 'ways', 'step'
-]);
-
-const CONTEXT_PATTERNS = [
-    (w: string) => `${w} strategy`,
-    (w: string) => `${w} guide`,
-    (w: string) => `${w} tips`,
-    (w: string) => `${w} methods`,
-    (w: string) => `how to ${w}`,
-    (w: string) => `benefits of ${w}`,
-    (w: string) => `${w} techniques`,
-    (w: string) => `${w} approach`
-];
-
-function findSemanticAnchor(text: string, target: InternalLinkTarget, log: LogFunction, verbose: boolean = false): string | null {
-    if (!text || !target?.title) return null;
-    
-    const textLower = text.toLowerCase();
-    const titleClean = target.title.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-    const titleWords = titleClean.split(' ').filter(w => w.length >= 3 && !STOP_WORDS.has(w));
-    
-    if (titleWords.length === 0) return null;
-    
-    // Strategy 1: Multi-word phrase (2-4 words)
-    for (let len = Math.min(4, titleWords.length); len >= 2; len--) {
-        for (let start = 0; start <= titleWords.length - len; start++) {
-            const phrase = titleWords.slice(start, start + len).join(' ');
-            if (phrase.length >= 6 && textLower.includes(phrase)) {
-                const regex = new RegExp(phrase, 'i');
-                const match = text.match(regex);
-                if (match) {
-                    if (verbose) log(`         ✓ Phrase match: "${match[0]}"`);
-                    return match[0];
-                }
-            }
-        }
-    }
-    
-    // Strategy 2: Context patterns
-    for (const word of titleWords) {
-        if (word.length < 4) continue;
-        for (const patternFn of CONTEXT_PATTERNS) {
-            const pattern = patternFn(word);
-            if (textLower.includes(pattern)) {
-                const regex = new RegExp(pattern, 'i');
-                const match = text.match(regex);
-                if (match) {
-                    if (verbose) log(`         ✓ Context match: "${match[0]}"`);
-                    return match[0];
-                }
-            }
-        }
-    }
-    
-    // Strategy 3: Important word + adjacent
-    const important = titleWords.filter(w => w.length >= 5);
-    for (const word of important) {
-        const idx = textLower.indexOf(word);
-        if (idx === -1) continue;
-        
-        const actual = text.substring(idx, idx + word.length);
-        
-        // word + next
-        const after = text.substring(idx + word.length, idx + word.length + 20);
-        const afterMatch = after.match(/^\s*([a-zA-Z]{3,12})/);
-        if (afterMatch && !STOP_WORDS.has(afterMatch[1].toLowerCase())) {
-            const anchor = `${actual} ${afterMatch[1]}`;
-            if (anchor.length >= 8 && anchor.length <= 35) {
-                if (verbose) log(`         ✓ Adjacent match: "${anchor}"`);
-                return anchor;
-            }
-        }
-        
-        // Single word (7+ chars)
-        if (word.length >= 7) {
-            if (verbose) log(`         ✓ Single word: "${actual}"`);
-            return actual;
-        }
-    }
-    
-    return null;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔗 INTERNAL LINK INJECTION — WITH BRIDGE SENTENCES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function injectInternalLinks(html: string, targets: InternalLinkTarget[], log: LogFunction): { html: string; count: number } {
-    if (!html || !targets?.length) return { html: html || '', count: 0 };
-    
-    log(`   🔗 INTERNAL LINK INJECTION...`);
-    log(`      → Targets: ${targets.length}`);
-    
-    let count = 0;
-    const used = new Set<string>();
-    const parts = html.split(/<\/p>/gi);
-    
-    const bridgePhrases = [
-        'For more on this topic, see our guide on',
-        'Learn more in our article about',
-        'Related reading:',
-        'You might also like:'
-    ];
-    
-    const result = parts.map((part, idx) => {
-        if (count >= CONFIG.MAX_LINKS) return part;
-        if (!part.includes('<p')) return part;
-        if (part.includes('<a href') || part.includes('wpo-')) return part;
-        
-        const plainText = part.replace(/<[^>]*>/g, ' ').trim();
-        if (plainText.length < 40) return part;
-        
-        // Try semantic anchor
-        for (const target of targets) {
-            if (used.has(target.url)) continue;
-            
-            const anchor = findSemanticAnchor(plainText, target, log, count < 3);
-            
-            if (anchor) {
-                const escaped = anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`\\b${escaped}\\b`, 'i');
-                
-                if (regex.test(part)) {
-                    const link = `<a href="${escapeHtml(target.url)}" style="color: #6366f1 !important; text-decoration: underline !important;">${anchor}</a>`;
-                    const newPart = part.replace(regex, link);
-                    
-                    if (newPart !== part) {
-                        count++;
-                        used.add(target.url);
-                        log(`      ✅ Link ${count}: "${anchor}"`);
-                        return newPart;
-                    }
-                }
-            }
-        }
-        
-        // Bridge sentence fallback (every 5th paragraph if no semantic match)
-        if (idx % 5 === 4 && plainText.length > 100) {
-            for (const target of targets) {
-                if (used.has(target.url)) continue;
-                
-                count++;
-                used.add(target.url);
-                const bridge = bridgePhrases[count % bridgePhrases.length];
-                const bridgeLink = ` <em style="font-size: 14px !important; color: #64748b !important;">(${bridge} <a href="${escapeHtml(target.url)}" style="color: #6366f1 !important;">${escapeHtml(target.title.substring(0, 40))}</a>)</em>`;
-                log(`      ✅ Bridge ${count}: "${target.title.substring(0, 30)}..."`);
-                return part + bridgeLink;
-            }
-        }
-        
-        return part;
-    });
-    
-    log(`      → Total links: ${count}`);
-    return { html: result.join('</p>'), count };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔍 JSON HEALING
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function healJSON(raw: string, log: LogFunction): { success: boolean; data?: any } {
-    if (!raw?.trim()) return { success: false };
-    
-    let text = raw.trim()
-        .replace(/^```json\s*/i, '')
-        .replace(/^```\s*/i, '')
-        .replace(/\s*```$/i, '');
-    
-    // Direct parse
-    try {
-        const parsed = JSON.parse(text);
-        if (parsed.htmlContent) return { success: true, data: parsed };
-    } catch {}
-    
-    // Find boundaries
-    const first = text.indexOf('{');
-    const last = text.lastIndexOf('}');
-    if (first !== -1 && last > first) {
-        try {
-            const parsed = JSON.parse(text.slice(first, last + 1));
-            if (parsed.htmlContent) {
-                log('   ✓ JSON healed');
-                return { success: true, data: parsed };
-            }
-        } catch {}
-    }
-    
-    // Fix trailing commas + close brackets
-    let fixed = text.replace(/,(\s*[}\]])/g, '$1');
-    const opens = (fixed.match(/\{/g) || []).length;
-    const closes = (fixed.match(/\}/g) || []).length;
-    if (opens > closes) fixed += '}'.repeat(opens - closes);
-    
-    try {
-        const parsed = JSON.parse(fixed);
-        if (parsed.htmlContent) {
-            log('   ✓ JSON healed (fixed)');
-            return { success: true, data: parsed };
-        }
-    } catch {}
-    
-    return { success: false };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📝 CONTENT CLEANUP
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function cleanContent(html: string, log: LogFunction): string {
-    if (!html) return '';
-    
-    // Remove H1 tags
-    let cleaned = html.replace(/<h1[^>]*>[\s\S]*?<\/h1>/gi, '');
-    
-    // Remove FAQ sections (we add our own)
-    cleaned = cleaned.replace(/<h2[^>]*>.*?(?:FAQ|Frequently Asked).*?<\/h2>[\s\S]*?(?=<h2|$)/gi, '');
-    
-    // Clean whitespace
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
-    
-    return cleaned;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🎨 VISUAL ENRICHMENT ENGINE — HIGH FREQUENCY
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function enrichWithVisuals(html: string, topic: string, video: YouTubeVideoData | null, log: LogFunction): string {
-    log(`   🎨 VISUAL ENRICHMENT...`);
-    
-    const visualGenerators = [
-        (t: string) => createProTipBox(`When implementing ${t}, consistency beats intensity. Small daily actions compound into massive results.`, '💡 Pro Tip'),
-        (t: string) => createStatisticsBox([
-            { value: '87%', label: 'Success Rate', icon: '📈' },
-            { value: '3x', label: 'Faster Growth', icon: '⚡' },
-            { value: '10K+', label: 'Users Helped', icon: '👥' }
-        ]),
-        (t: string) => createWarningBox(`Common mistake: Many beginners rush the planning phase. Take your time to build a solid foundation.`, '⚠️ Warning'),
-        (t: string) => createChecklistBox('Action Checklist', [
-            'Audit your current setup',
-            'Define clear KPIs',
-            'Execute the framework',
-            'Review results weekly'
-        ]),
-        (t: string) => createCalloutBox(`Take a moment to bookmark this section. You'll want to reference it later.`, 'info'),
-        (t: string) => createExpertQuoteBox(`"The secret isn't knowing what to do—it's doing it consistently."`, 'Industry Expert', 'Thought Leader'),
-        (t: string) => createHighlightBox(`Remember: This is a marathon, not a sprint. Focus on sustainable progress.`, '🚀'),
-        (t: string) => createDefinitionBox(t.split(' ').slice(0, 3).join(' '), 'A systematic approach to achieving measurable results through proven strategies.'),
-        (t: string) => createCalloutBox(`You're making great progress! Most people never get this far.`, 'success'),
-        (t: string) => createNumberedBox('1', 'Key Insight', `The most successful practitioners focus on fundamentals first.`)
-    ];
-    
-    // Split by H2
-    const parts = html.split(/(<h2[^>]*>)/gi);
-    const result: string[] = [];
-    
-    // Add opening
-    result.push('<div class="wpo-wrap">');
-    result.push(THEME_ADAPTIVE_CSS);
-    
-    // Quick answer box
-    result.push(createQuickAnswerBox(
-        `This comprehensive guide to ${topic} covers proven strategies, expert insights, and actionable steps you can implement immediately.`,
-        '⚡ Quick Answer'
-    ));
-    
-    // Statistics
-    result.push(createStatisticsBox([
-        { value: '73%', label: 'Success Rate', icon: '📈' },
-        { value: '2.5x', label: 'Faster Results', icon: '⚡' },
-        { value: '10K+', label: 'People Helped', icon: '👥' },
-        { value: '4.8★', label: 'Rating', icon: '⭐' }
-    ]));
-    
-    let visualIdx = 0;
-    let isFirstH2 = true;
-    let sectionCount = 0;
-    
-    for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        
-        if (part.match(/<h2[^>]*>/i)) {
-            sectionCount++;
-            result.push(part);
-            
-            // YOUTUBE EMBED — After first H2
-            if (isFirstH2 && video && video.videoId) {
-                log(`   🎬 EMBEDDING YOUTUBE: ${video.videoId}`);
-                result.push(createYouTubeEmbed(video));
-                isFirstH2 = false;
-            }
-            
-            continue;
-        }
-        
-        // Content block
-        if (part.trim().length > 0) {
-            // Split by paragraphs
-            const paras = part.split(/<\/p>/gi).filter(p => p.trim().length > 30);
-            
-            let processedContent = '';
-            paras.forEach((p, pIdx) => {
-                processedContent += p + '</p>\n';
-                
-                // Inject visual every N paragraphs
-                if ((pIdx + 1) % CONFIG.VISUAL_EVERY_N_PARAGRAPHS === 0) {
-                    processedContent += visualGenerators[visualIdx % visualGenerators.length](topic);
-                    visualIdx++;
-                }
-            });
-            
-            result.push(processedContent);
-            
-            // Section-specific visuals
-            if (sectionCount === 2) {
-                result.push(createDataTable(
-                    `${topic} — Key Metrics`,
-                    ['Metric', 'Value', 'Impact'],
-                    [
-                        ['Success Rate', '67-73%', 'High'],
-                        ['Time to Results', '30-90 days', 'Medium'],
-                        ['ROI', '2.5x average', 'High']
-                    ],
-                    'Industry research'
-                ));
-            }
-            
-            if (sectionCount === 4) {
-                result.push(createComparisonTable(
-                    'What Works vs What Doesn\'t',
-                    ['❌ Mistakes', '✅ Best Practices'],
-                    [
-                        ['Trying everything at once', 'Focus on one strategy'],
-                        ['Copying blindly', 'Adapt to your situation'],
-                        ['Giving up early', 'Learn from failures']
-                    ]
-                ));
-            }
-            
-            if (sectionCount === 6) {
-                result.push(createStepByStepBox('Implementation Plan', [
-                    { title: 'Step 1: Assess', description: 'Evaluate your current situation' },
-                    { title: 'Step 2: Plan', description: 'Create a focused strategy' },
-                    { title: 'Step 3: Execute', description: 'Take consistent action' },
-                    { title: 'Step 4: Review', description: 'Analyze and adjust' }
-                ]));
-            }
-        }
-    }
-    
-    log(`      → Visuals injected: ${visualIdx}`);
-    log(`      → Sections processed: ${sectionCount}`);
-    
-    return result.join('\n\n');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔌 LLM CALLERS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-async function callLLM(
-    provider: string,
-    apiKeys: any,
-    model: string,
-    userPrompt: string,
-    systemPrompt: string,
-    options: { temperature?: number; maxTokens?: number },
-    timeoutMs: number,
-    log: LogFunction
-): Promise<string> {
-    const { temperature = 0.7, maxTokens = 16000 } = options;
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    
-    try {
-        let response: string;
-        
-        switch (provider) {
-            case 'google':
-                const ai = new GoogleGenAI({ apiKey: apiKeys.google });
-                const geminiRes = await ai.models.generateContent({
-                    model: model || 'gemini-2.5-flash-preview-05-20',
-                    contents: userPrompt,
-                    config: { systemInstruction: systemPrompt, temperature, maxOutputTokens: maxTokens }
-                });
-                response = geminiRes.text || '';
-                break;
-                
-            case 'openrouter':
-                const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${apiKeys.openrouter}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: apiKeys.openrouterModel || model,
-                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                        temperature, max_tokens: maxTokens
-                    }),
-                    signal: controller.signal
-                });
-                if (!orRes.ok) throw new Error(`OpenRouter ${orRes.status}`);
-                const orData = await orRes.json();
-                response = orData.choices?.[0]?.message?.content || '';
-                break;
-                
-            case 'openai':
-                const oaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${apiKeys.openai}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: model || 'gpt-4o',
-                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                        temperature, max_tokens: maxTokens
-                    }),
-                    signal: controller.signal
-                });
-                if (!oaiRes.ok) throw new Error(`OpenAI ${oaiRes.status}`);
-                const oaiData = await oaiRes.json();
-                response = oaiData.choices?.[0]?.message?.content || '';
-                break;
-                
-            case 'anthropic':
-                const antRes = await fetch('https://api.anthropic.com/v1/messages', {
-                    method: 'POST',
-                    headers: { 'x-api-key': apiKeys.anthropic, 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
-                    body: JSON.stringify({
-                        model: model || 'claude-sonnet-4-20250514',
-                        system: systemPrompt,
-                        messages: [{ role: 'user', content: userPrompt }],
-                        temperature, max_tokens: maxTokens
-                    }),
-                    signal: controller.signal
-                });
-                if (!antRes.ok) throw new Error(`Anthropic ${antRes.status}`);
-                const antData = await antRes.json();
-                response = antData.content?.[0]?.text || '';
-                break;
-                
-            case 'groq':
-                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${apiKeys.groq}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: apiKeys.groqModel || 'llama-3.3-70b-versatile',
-                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                        temperature, max_tokens: Math.min(maxTokens, 8000)
-                    }),
-                    signal: controller.signal
-                });
-                if (!groqRes.ok) throw new Error(`Groq ${groqRes.status}`);
-                const groqData = await groqRes.json();
-                response = groqData.choices?.[0]?.message?.content || '';
-                break;
-                
-            default:
-                throw new Error(`Unknown provider: ${provider}`);
-        }
-        
-        clearTimeout(timeoutId);
-        return response;
-    } catch (e) {
-        clearTimeout(timeoutId);
-        throw e;
+        return new URL(url).hostname.replace('www.', '');
+    } catch {
+        return 'source';
     }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🚀 MAIN ORCHESTRATOR
+// 🎨 DESIGN TOKENS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class AIOrchestrator {
+const COLORS = {
+    // Primary
+    primary: '#6366f1',
+    primaryDark: '#4f46e5',
+    primaryLight: '#818cf8',
+    primaryBg: '#eef2ff',
+    primaryBorder: '#c7d2fe',
     
-    async generateSingleShot(config: GenerateConfig, log: LogFunction): Promise<GenerationResult> {
-        const startTime = Date.now();
-        
-        log(`🚀 ═══════════════════════════════════════════════════════════`);
-        log(`🚀 WP OPTIMIZER PRO v${AI_ORCHESTRATOR_VERSION}`);
-        log(`🚀 ═══════════════════════════════════════════════════════════`);
-        log(`   → Topic: "${config.topic.substring(0, 50)}..."`);
-        log(`   → Provider: ${config.provider}`);
-        log(`   → Model: ${config.model}`);
-        log(`   → Serper: ${config.apiKeys?.serper ? '✅' : '❌'}`);
-        
-        // ═══════════════════════════════════════════════════════════════
-        // PHASE 1: PARALLEL ASSET DISCOVERY
-        // ═══════════════════════════════════════════════════════════════
-        
-        log(`\n🔍 PHASE 1: Asset Discovery`);
-        
-        // Create promises
-        const youtubePromise = config.apiKeys?.serper 
-            ? searchYouTubeVideo(config.topic, config.apiKeys.serper, log)
-            : Promise.resolve(null);
-            
-        const referencesPromise = config.apiKeys?.serper
-            ? discoverReferences(config.topic, config.apiKeys.serper, { targetCount: 10 }, log)
-            : Promise.resolve([]);
-        
-        // ═══════════════════════════════════════════════════════════════
-        // PHASE 2: CONTENT GENERATION
-        // ═══════════════════════════════════════════════════════════════
-        
-        log(`\n📝 PHASE 2: Content Generation`);
-        
-        const systemPrompt = `You are a world-class SEO content writer. Write comprehensive, high-value blog content.
-
-RULES:
-1. NO H1 tags (WordPress provides title)
-2. Use 8-12 H2 headings with 2-3 H3 subheadings each
-3. Short paragraphs (2-4 sentences)
-4. Wrap ALL text in <p> tags
-5. Use contractions (don't, won't, you'll)
-6. NO FAQ section (we add separately)
-
-FORBIDDEN: "In today's", "It's important to note", "Let's dive in", "Comprehensive guide"
-
-OUTPUT: Valid JSON only:
-{
-  "title": "Title (50-60 chars)",
-  "slug": "url-slug",
-  "metaDescription": "Meta description (150-160 chars)",
-  "htmlContent": "Full HTML with <p>, <h2>, <h3>",
-  "excerpt": "2-3 sentence summary",
-  "faqs": [{"question": "...", "answer": "80-150 words"}]
-}`;
-
-        const userPrompt = `Write a ${CONFIG.TARGET_WORDS}+ word expert article about: "${config.topic}"`;
-        
-        let contract: ContentContract | null = null;
-        
-        for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
-            log(`   📝 Attempt ${attempt}/${CONFIG.MAX_RETRIES}...`);
-            
-            try {
-                const response = await callLLM(
-                    config.provider, config.apiKeys, config.model,
-                    userPrompt, systemPrompt,
-                    { temperature: 0.72 + (attempt - 1) * 0.05, maxTokens: 16000 },
-                    CONFIG.TIMEOUT_SINGLE_SHOT, log
-                );
-                
-                const healed = healJSON(response, log);
-                if (healed.success && healed.data?.htmlContent) {
-                    contract = healed.data;
-                    log(`   ✅ Generated: ${countWords(contract.htmlContent)} words`);
-                    break;
-                }
-            } catch (e: any) {
-                log(`   ❌ Error: ${e.message}`);
-            }
-            
-            if (attempt < CONFIG.MAX_RETRIES) await sleep(2000 * attempt);
-        }
-        
-        if (!contract) throw new Error('Content generation failed');
-        
-        // ═══════════════════════════════════════════════════════════════
-        // PHASE 3: AWAIT ASSETS — CRITICAL!
-        // ═══════════════════════════════════════════════════════════════
-        
-        log(`\n⏳ PHASE 3: Awaiting Assets...`);
-        
-        const [youtubeResult, refsResult] = await Promise.allSettled([youtubePromise, referencesPromise]);
-        
-        // EXPLICIT CAPTURE
-        let video: YouTubeVideoData | null = null;
-        if (youtubeResult.status === 'fulfilled' && youtubeResult.value?.videoId) {
-            video = youtubeResult.value;
-            log(`   ✅ YouTube CAPTURED: ${video.videoId}`);
-        } else {
-            log(`   ⚠️ YouTube: ${youtubeResult.status === 'rejected' ? 'rejected' : 'no result'}`);
-        }
-        
-        const references = refsResult.status === 'fulfilled' ? refsResult.value : [];
-        log(`   ✅ References: ${references.length}`);
-        
-        // ═══════════════════════════════════════════════════════════════
-        // PHASE 4: ENRICHMENT
-        // ═══════════════════════════════════════════════════════════════
-        
-        log(`\n🎨 PHASE 4: Enrichment`);
-        
-        let html = cleanContent(contract.htmlContent, log);
-        html = enrichWithVisuals(html, config.topic, video, log);
-        
-        // Key Takeaways
-        html += createKeyTakeaways([
-            `${config.topic} requires consistent action over time`,
-            `Focus on the 20% that drives 80% of results`,
-            `Track progress weekly`,
-            `Start messy, iterate fast`,
-            `Learn from those who succeeded`
-        ]);
-        
-        // FAQ
-        if (contract.faqs?.length > 0) {
-            const valid = contract.faqs.filter((f: any) => f?.question?.length > 5 && f?.answer?.length > 20);
-            if (valid.length > 0) {
-                html += createFAQAccordion(valid);
-                log(`   ✅ FAQ: ${valid.length} questions`);
-            }
-        } else {
-            html += createFAQAccordion([
-                { question: `What is ${config.topic}?`, answer: 'A systematic approach to achieving results through proven strategies.' },
-                { question: 'How long to see results?', answer: 'Most see results within 30-90 days of consistent effort.' },
-                { question: 'Common mistakes?', answer: 'Trying too much at once, not tracking progress, giving up early.' }
-            ]);
-        }
-        
-        // References
-        if (references.length > 0) {
-            html += createReferencesSection(references);
-            log(`   ✅ References section added`);
-        }
-        
-        // Final CTA
-        html += createHighlightBox(`You now have everything you need. Will you take action? Start today!`, '🚀', '#22c55e');
-        
-        html += '</div>'; // Close wpo-wrap
-        
-        // ═══════════════════════════════════════════════════════════════
-        // PHASE 5: INTERNAL LINKS
-        // ═══════════════════════════════════════════════════════════════
-        
-        if (config.internalLinks?.length > 0) {
-            log(`\n🔗 PHASE 5: Internal Links`);
-            const linkResult = injectInternalLinks(html, config.internalLinks, log);
-            html = linkResult.html;
-        }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // FINALIZE
-        // ═══════════════════════════════════════════════════════════════
-        
-        const finalContract: ContentContract = {
-            ...contract,
-            htmlContent: html,
-            wordCount: countWords(html)
-        };
-        
-        const totalTime = Date.now() - startTime;
-        
-        log(`\n🎉 ═══════════════════════════════════════════════════════════`);
-        log(`🎉 COMPLETE`);
-        log(`🎉 ═══════════════════════════════════════════════════════════`);
-        log(`   → Words: ${finalContract.wordCount}`);
-        log(`   → Time: ${(totalTime / 1000).toFixed(1)}s`);
-        log(`   → YouTube: ${video ? '✅ ' + video.videoId : '❌'}`);
-        log(`   → References: ${references.length}`);
-        
-        return {
-            contract: finalContract,
-            generationMethod: 'single-shot',
-            attempts: 1,
-            totalTime,
-            youtubeVideo: video || undefined,
-            references
-        };
-    }
+    // Success
+    success: '#22c55e',
+    successDark: '#16a34a',
+    successBg: '#f0fdf4',
+    successBorder: '#bbf7d0',
     
-    async generateEnhanced(config: GenerateConfig, log: LogFunction): Promise<GenerationResult> {
-        return this.generateSingleShot(config, log);
-    }
+    // Warning
+    warning: '#f59e0b',
+    warningDark: '#d97706',
+    warningBg: '#fffbeb',
+    warningBorder: '#fde68a',
     
-    async generate(config: GenerateConfig, log: LogFunction): Promise<GenerationResult> {
-        return this.generateSingleShot(config, log);
-    }
+    // Danger/Error
+    danger: '#ef4444',
+    dangerDark: '#dc2626',
+    dangerBg: '#fef2f2',
+    dangerBorder: '#fecaca',
+    
+    // Info
+    info: '#3b82f6',
+    infoDark: '#2563eb',
+    infoBg: '#eff6ff',
+    infoBorder: '#bfdbfe',
+    
+    // Neutrals
+    white: '#ffffff',
+    gray50: '#f8fafc',
+    gray100: '#f1f5f9',
+    gray200: '#e2e8f0',
+    gray300: '#cbd5e1',
+    gray400: '#94a3b8',
+    gray500: '#64748b',
+    gray600: '#475569',
+    gray700: '#334155',
+    gray800: '#1e293b',
+    gray900: '#0f172a',
+    
+    // Gradients
+    gradPrimary: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+    gradSuccess: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+    gradWarning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    gradDanger: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    gradInfo: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    gradPurple: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    gradTeal: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    gradOrange: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+    gradDark: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+    gradSunset: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+} as const;
+
+const SHADOWS = {
+    sm: '0 1px 2px rgba(0,0,0,0.05)',
+    md: '0 4px 12px rgba(0,0,0,0.08)',
+    lg: '0 12px 32px rgba(0,0,0,0.12)',
+    xl: '0 20px 48px rgba(0,0,0,0.15)',
+    primary: '0 12px 28px rgba(99,102,241,0.35)',
+    success: '0 12px 28px rgba(34,197,94,0.35)',
+    danger: '0 12px 28px rgba(239,68,68,0.35)',
+    info: '0 12px 28px rgba(59,130,246,0.35)',
+    warning: '0 12px 28px rgba(245,158,11,0.35)'
+} as const;
+
+const RADIUS = {
+    sm: '8px',
+    md: '12px',
+    lg: '16px',
+    xl: '20px',
+    xxl: '24px',
+    full: '50%'
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎨 MINIMAL CSS RESET
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const THEME_ADAPTIVE_CSS = `
+<style>
+.wpo-wrap, .wpo-wrap *, .wpo-wrap *::before, .wpo-wrap *::after {
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+.wpo-wrap img { max-width: 100% !important; height: auto !important; display: block !important; }
+.wpo-wrap a { text-decoration: none !important; transition: opacity 0.2s ease !important; }
+.wpo-wrap a:hover { opacity: 0.85 !important; }
+.wpo-wrap ul, .wpo-wrap ol { list-style: none !important; padding: 0 !important; margin: 0 !important; }
+.wpo-wrap p { margin: 0 0 1rem 0 !important; }
+.wpo-wrap h2, .wpo-wrap h3, .wpo-wrap h4, .wpo-wrap h5, .wpo-wrap h6 { margin: 0 !important; line-height: 1.3 !important; }
+.wpo-wrap details summary { cursor: pointer !important; list-style: none !important; }
+.wpo-wrap details summary::-webkit-details-marker { display: none !important; }
+.wpo-wrap details summary::marker { display: none !important; }
+.wpo-wrap .wpo-video-container { position: relative !important; padding-bottom: 56.25% !important; height: 0 !important; overflow: hidden !important; }
+.wpo-wrap .wpo-video-container iframe { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: none !important; }
+</style>
+`;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚡ COMPONENT 1: QUICK ANSWER BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createQuickAnswerBox(answer: string, title: string = 'Quick Answer'): string {
+    if (!isValidString(answer)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.gradPurple} !important; border-radius: ${RADIUS.xl} !important; padding: 32px 36px !important; margin: 40px 0 !important; box-shadow: 0 20px 40px rgba(102,126,234,0.35) !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 24px !important; flex-wrap: wrap !important;">
+    <div style="width: 64px !important; height: 64px !important; min-width: 64px !important; background: rgba(255,255,255,0.2) !important; border-radius: ${RADIUS.lg} !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important;">
+      <span style="font-size: 32px !important; line-height: 1 !important;">⚡</span>
+    </div>
+    <div style="flex: 1 !important; min-width: 250px !important;">
+      <div style="font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 2px !important; color: rgba(255,255,255,0.9) !important; margin-bottom: 8px !important; display: block !important;">${escapeHtml(title)}</div>
+      <p style="font-size: 18px !important; line-height: 1.7 !important; color: ${COLORS.white} !important; margin: 0 !important; font-weight: 500 !important;">${answer}</p>
+    </div>
+  </div>
+</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 📤 EXPORTS
+// 💡 COMPONENT 2: PRO TIP BOX
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export const orchestrator = new AIOrchestrator();
+export function createProTipBox(tip: string, title: string = 'Pro Tip'): string {
+    if (!isValidString(tip)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.gradTeal} !important; border-radius: ${RADIUS.xl} !important; padding: 28px 32px !important; margin: 36px 0 !important; box-shadow: 0 16px 36px rgba(17,153,142,0.3) !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 20px !important; flex-wrap: wrap !important;">
+    <div style="width: 56px !important; height: 56px !important; min-width: 56px !important; background: rgba(255,255,255,0.2) !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important;">
+      <span style="font-size: 28px !important; line-height: 1 !important;">💡</span>
+    </div>
+    <div style="flex: 1 !important; min-width: 250px !important;">
+      <div style="font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 2px !important; color: rgba(255,255,255,0.9) !important; margin-bottom: 8px !important;">${escapeHtml(title)}</div>
+      <p style="font-size: 16px !important; line-height: 1.7 !important; color: ${COLORS.white} !important; margin: 0 !important;">${tip}</p>
+    </div>
+  </div>
+</div>`;
+}
 
-export const VALID_GEMINI_MODELS: Record<string, string> = {
-    'gemini-2.5-flash-preview-05-20': 'Gemini 2.5 Flash',
-    'gemini-2.5-pro-preview-05-06': 'Gemini 2.5 Pro',
-    'gemini-2.0-flash': 'Gemini 2.0 Flash',
-    'gemini-1.5-pro': 'Gemini 1.5 Pro'
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚠️ COMPONENT 3: WARNING BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createWarningBox(warning: string, title: string = 'Warning'): string {
+    if (!isValidString(warning)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.gradSunset} !important; border-radius: ${RADIUS.xl} !important; padding: 28px 32px !important; margin: 36px 0 !important; box-shadow: 0 16px 36px rgba(238,90,36,0.3) !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 20px !important; flex-wrap: wrap !important;">
+    <div style="width: 56px !important; height: 56px !important; min-width: 56px !important; background: rgba(255,255,255,0.2) !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important;">
+      <span style="font-size: 28px !important; line-height: 1 !important;">⚠️</span>
+    </div>
+    <div style="flex: 1 !important; min-width: 250px !important;">
+      <div style="font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 2px !important; color: rgba(255,255,255,0.9) !important; margin-bottom: 8px !important;">${escapeHtml(title)}</div>
+      <p style="font-size: 16px !important; line-height: 1.7 !important; color: ${COLORS.white} !important; margin: 0 !important;">${warning}</p>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 💬 COMPONENT 4: EXPERT QUOTE BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createExpertQuoteBox(quote: string, author: string, title?: string): string {
+    if (!isValidString(quote) || !isValidString(author)) return '';
+    
+    return `
+<blockquote class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, #f0f4ff 100%) !important; border-left: 5px solid ${COLORS.primary} !important; border-radius: 0 ${RADIUS.xl} ${RADIUS.xl} 0 !important; padding: 32px 36px !important; margin: 40px 0 !important; box-shadow: ${SHADOWS.md} !important; font-style: normal !important; overflow: hidden !important;">
+  <div style="font-size: 48px !important; color: ${COLORS.primary} !important; opacity: 0.4 !important; line-height: 1 !important; margin-bottom: 12px !important; font-family: Georgia, serif !important;">"</div>
+  <p style="font-size: 19px !important; line-height: 1.8 !important; font-style: italic !important; margin: 0 0 24px 0 !important; color: ${COLORS.gray800} !important;">${quote}</p>
+  <footer style="display: flex !important; align-items: center !important; gap: 16px !important; flex-wrap: wrap !important;">
+    <div style="width: 52px !important; height: 52px !important; min-width: 52px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.full} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+      <span style="font-size: 24px !important;">👤</span>
+    </div>
+    <div>
+      <cite style="font-style: normal !important; font-weight: 800 !important; font-size: 16px !important; display: block !important; color: ${COLORS.gray800} !important;">${escapeHtml(author)}</cite>
+      ${title ? `<span style="font-size: 14px !important; color: ${COLORS.gray500} !important;">${escapeHtml(title)}</span>` : ''}
+    </div>
+  </footer>
+</blockquote>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ✨ COMPONENT 5: HIGHLIGHT BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createHighlightBox(text: string, icon: string = '✨', bgColor: string = COLORS.primary): string {
+    if (!isValidString(text)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${bgColor} 0%, ${bgColor}dd 100%) !important; border-radius: ${RADIUS.xl} !important; padding: 30px 36px !important; margin: 40px 0 !important; box-shadow: 0 16px 40px ${bgColor}40 !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 20px !important; flex-wrap: wrap !important;">
+    <span style="font-size: 42px !important; line-height: 1 !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)) !important;">${icon}</span>
+    <p style="flex: 1 !important; font-size: 18px !important; line-height: 1.7 !important; color: ${COLORS.white} !important; margin: 0 !important; font-weight: 600 !important; min-width: 200px !important;">${text}</p>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📢 COMPONENT 6: CALLOUT BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createCalloutBox(text: string, type: CalloutType = 'info'): string {
+    if (!isValidString(text)) return '';
+    
+    const configs: Record<CalloutType, { bg: string; border: string; color: string; icon: string; label: string }> = {
+        info: { bg: COLORS.infoBg, border: COLORS.info, color: COLORS.info, icon: 'ℹ️', label: 'Info' },
+        success: { bg: COLORS.successBg, border: COLORS.success, color: COLORS.success, icon: '✅', label: 'Success' },
+        warning: { bg: COLORS.warningBg, border: COLORS.warning, color: COLORS.warning, icon: '⚡', label: 'Note' },
+        error: { bg: COLORS.dangerBg, border: COLORS.danger, color: COLORS.danger, icon: '🔥', label: 'Important' }
+    };
+    
+    const c = configs[type];
+    
+    return `
+<div class="wpo-wrap" style="background: ${c.bg} !important; border: none !important; border-left: 5px solid ${c.border} !important; border-radius: 0 ${RADIUS.lg} ${RADIUS.lg} 0 !important; padding: 24px 28px !important; margin: 32px 0 !important; box-shadow: ${SHADOWS.sm} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 16px !important; flex-wrap: wrap !important;">
+    <span style="font-size: 26px !important; line-height: 1 !important;">${c.icon}</span>
+    <div style="flex: 1 !important; min-width: 200px !important;">
+      <div style="font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; color: ${c.color} !important; margin-bottom: 6px !important;">${c.label}</div>
+      <p style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray700} !important; margin: 0 !important;">${text}</p>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📊 COMPONENT 7: STATISTICS BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createStatisticsBox(stats: StatItem[]): string {
+    if (!isValidArray(stats)) return '';
+    
+    const items = stats.map(stat => `
+      <div style="flex: 1 !important; min-width: 140px !important; text-align: center !important; padding: 28px 20px !important; background: ${COLORS.white} !important; border-radius: ${RADIUS.lg} !important; box-shadow: ${SHADOWS.md} !important;">
+        ${stat.icon ? `<div style="font-size: 28px !important; margin-bottom: 12px !important;">${stat.icon}</div>` : ''}
+        <div style="font-size: 36px !important; font-weight: 900 !important; background: ${COLORS.gradPrimary} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-clip: text !important; margin-bottom: 8px !important; line-height: 1 !important;">${escapeHtml(stat.value)}</div>
+        <div style="font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; color: ${COLORS.gray500} !important;">${escapeHtml(stat.label)}</div>
+      </div>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.gray50} 0%, ${COLORS.gray100} 100%) !important; border: 1px solid ${COLORS.gray200} !important; border-radius: ${RADIUS.xxl} !important; padding: 32px !important; margin: 48px 0 !important; overflow: hidden !important;">
+  <div style="display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 20px !important;">
+    ${items}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📋 COMPONENT 8: DATA TABLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDataTable(title: string, headers: string[], rows: string[][], sourceNote?: string): string {
+    if (!isValidString(title) || !isValidArray(headers) || !isValidArray(rows)) return '';
+    
+    const headerCells = headers.map(h => `
+        <th style="padding: 16px 20px !important; text-align: left !important; font-size: 12px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; background: ${COLORS.gray100} !important; color: ${COLORS.primary} !important; border-bottom: 2px solid ${COLORS.primaryBorder} !important;">${escapeHtml(h)}</th>
+    `).join('');
+    
+    const tableRows = rows.map((row, i) => {
+        const cells = row.map((cell, j) => `
+            <td style="padding: 16px 20px !important; font-size: 14px !important; border-bottom: 1px solid ${COLORS.gray100} !important; color: ${COLORS.gray700} !important; ${j === 0 ? 'font-weight: 600 !important;' : ''} background: ${i % 2 === 0 ? COLORS.white : COLORS.gray50} !important;">${escapeHtml(cell)}</td>
+        `).join('');
+        return `<tr>${cells}</tr>`;
+    }).join('');
+
+    return `
+<div class="wpo-wrap" style="border-radius: ${RADIUS.xl} !important; overflow: hidden !important; margin: 48px 0 !important; box-shadow: ${SHADOWS.lg} !important; border: 1px solid ${COLORS.gray200} !important;">
+  <div style="padding: 24px 28px !important; background: linear-gradient(135deg, ${COLORS.gray50} 0%, ${COLORS.gray100} 100%) !important; border-bottom: 1px solid ${COLORS.gray200} !important;">
+    <div style="display: flex !important; align-items: center !important; gap: 16px !important; flex-wrap: wrap !important;">
+      <div style="width: 52px !important; height: 52px !important; min-width: 52px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+        <span style="font-size: 24px !important;">📊</span>
+      </div>
+      <div>
+        <h4 style="font-size: 20px !important; font-weight: 800 !important; margin: 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h4>
+        ${sourceNote ? `<p style="font-size: 13px !important; color: ${COLORS.gray500} !important; margin: 4px 0 0 0 !important;">Source: ${escapeHtml(sourceNote)}</p>` : ''}
+      </div>
+    </div>
+  </div>
+  <div style="overflow-x: auto !important;">
+    <table style="width: 100% !important; border-collapse: collapse !important; min-width: 450px !important;">
+      <thead><tr>${headerCells}</tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ✅ COMPONENT 9: CHECKLIST BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createChecklistBox(title: string, items: string[], icon: string = '✅'): string {
+    if (!isValidString(title) || !isValidArray(items)) return '';
+    
+    const listItems = items.map((item, i) => `
+      <li style="display: flex !important; align-items: flex-start !important; gap: 16px !important; padding: 16px 0 !important; ${i < items.length - 1 ? `border-bottom: 1px solid ${COLORS.successBorder} !important;` : ''}">
+        <span style="font-size: 22px !important; line-height: 1.4 !important; flex-shrink: 0 !important;">${icon}</span>
+        <span style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray700} !important;">${escapeHtml(item)}</span>
+      </li>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.successBg} 0%, #ecfdf5 100%) !important; border: 2px solid ${COLORS.successBorder} !important; border-radius: ${RADIUS.xl} !important; padding: 32px !important; margin: 40px 0 !important; box-shadow: ${SHADOWS.md} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 16px !important; margin-bottom: 24px !important; flex-wrap: wrap !important;">
+    <div style="width: 52px !important; height: 52px !important; min-width: 52px !important; background: ${COLORS.gradSuccess} !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.success} !important;">
+      <span style="font-size: 24px !important;">📝</span>
+    </div>
+    <h4 style="font-size: 22px !important; font-weight: 800 !important; margin: 0 !important; color: #166534 !important;">${escapeHtml(title)}</h4>
+  </div>
+  <ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${listItems}</ul>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📋 COMPONENT 10: STEP-BY-STEP BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createStepByStepBox(title: string, steps: StepItem[]): string {
+    if (!isValidString(title) || !isValidArray(steps)) return '';
+    
+    const stepItems = steps.map((step, i) => `
+      <div style="display: flex !important; gap: 24px !important; ${i < steps.length - 1 ? `padding-bottom: 28px !important; margin-bottom: 28px !important; border-bottom: 2px dashed ${COLORS.primaryBorder} !important;` : ''}">
+        <div style="width: 56px !important; height: 56px !important; min-width: 56px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.full} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important; flex-shrink: 0 !important;">
+          <span style="font-size: 22px !important; font-weight: 900 !important; color: ${COLORS.white} !important;">${i + 1}</span>
+        </div>
+        <div style="flex: 1 !important; padding-top: 8px !important;">
+          <h5 style="font-size: 18px !important; font-weight: 800 !important; margin: 0 0 10px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(step.title)}</h5>
+          <p style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray500} !important; margin: 0 !important;">${escapeHtml(step.description)}</p>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}40 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xxl} !important; padding: 36px !important; margin: 48px 0 !important; box-shadow: ${SHADOWS.md} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 18px !important; margin-bottom: 32px !important; flex-wrap: wrap !important;">
+    <div style="width: 60px !important; height: 60px !important; min-width: 60px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.xl} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+      <span style="font-size: 28px !important;">📋</span>
+    </div>
+    <h4 style="font-size: 24px !important; font-weight: 800 !important; margin: 0 !important; color: #3730a3 !important;">${escapeHtml(title)}</h4>
+  </div>
+  ${stepItems}
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚖️ COMPONENT 11: COMPARISON TABLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createComparisonTable(title: string, headers: [string, string], rows: Array<[string, string]>): string {
+    if (!isValidString(title) || !isValidArray(rows)) return '';
+    
+    const tableRows = rows.map((row) => `
+      <tr>
+        <td style="padding: 18px 22px !important; background: ${COLORS.dangerBg} !important; width: 50% !important; vertical-align: top !important; border-bottom: 1px solid ${COLORS.dangerBorder} !important;">
+          <span style="color: ${COLORS.danger} !important; margin-right: 12px !important; font-size: 18px !important;">✗</span>
+          <span style="color: #7f1d1d !important; font-size: 15px !important;">${escapeHtml(row[0])}</span>
+        </td>
+        <td style="padding: 18px 22px !important; background: ${COLORS.successBg} !important; width: 50% !important; vertical-align: top !important; border-bottom: 1px solid ${COLORS.successBorder} !important;">
+          <span style="color: ${COLORS.success} !important; margin-right: 12px !important; font-size: 18px !important;">✓</span>
+          <span style="color: #166534 !important; font-size: 15px !important;">${escapeHtml(row[1])}</span>
+        </td>
+      </tr>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="border-radius: ${RADIUS.xl} !important; overflow: hidden !important; margin: 48px 0 !important; box-shadow: ${SHADOWS.lg} !important; border: 1px solid ${COLORS.gray200} !important;">
+  <div style="padding: 22px 28px !important; background: linear-gradient(135deg, ${COLORS.gray50} 0%, ${COLORS.gray100} 100%) !important; border-bottom: 1px solid ${COLORS.gray200} !important;">
+    <div style="display: flex !important; align-items: center !important; gap: 14px !important; flex-wrap: wrap !important;">
+      <span style="font-size: 28px !important;">⚖️</span>
+      <h4 style="font-size: 20px !important; font-weight: 800 !important; margin: 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h4>
+    </div>
+  </div>
+  <table style="width: 100% !important; border-collapse: collapse !important;">
+    <thead>
+      <tr>
+        <th style="padding: 16px 22px !important; text-align: left !important; font-size: 12px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; background: ${COLORS.dangerBg} !important; color: ${COLORS.danger} !important;">${escapeHtml(headers[0])}</th>
+        <th style="padding: 16px 22px !important; text-align: left !important; font-size: 12px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; background: ${COLORS.successBg} !important; color: ${COLORS.success} !important;">${escapeHtml(headers[1])}</th>
+      </tr>
+    </thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📖 COMPONENT 12: DEFINITION BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createDefinitionBox(term: string, definition: string): string {
+    if (!isValidString(term) || !isValidString(definition)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.infoBg} 0%, #dbeafe 100%) !important; border-left: 5px solid ${COLORS.info} !important; border-radius: 0 ${RADIUS.xl} ${RADIUS.xl} 0 !important; padding: 28px 32px !important; margin: 40px 0 !important; box-shadow: ${SHADOWS.md} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 20px !important; flex-wrap: wrap !important;">
+    <div style="width: 56px !important; height: 56px !important; min-width: 56px !important; background: ${COLORS.gradInfo} !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.info} !important; flex-shrink: 0 !important;">
+      <span style="font-size: 26px !important;">📖</span>
+    </div>
+    <div style="flex: 1 !important; min-width: 200px !important;">
+      <div style="font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; color: ${COLORS.info} !important; margin-bottom: 6px !important;">Definition</div>
+      <h5 style="font-size: 20px !important; font-weight: 800 !important; margin: 0 0 10px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(term)}</h5>
+      <p style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray600} !important; margin: 0 !important;">${definition}</p>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎯 COMPONENT 13: KEY TAKEAWAYS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createKeyTakeaways(takeaways: string[]): string {
+    if (!isValidArray(takeaways)) return '';
+    
+    const items = takeaways.map((t, i) => `
+      <li style="display: flex !important; align-items: flex-start !important; gap: 18px !important; padding: 20px 0 !important; ${i < takeaways.length - 1 ? `border-bottom: 1px solid ${COLORS.primaryBorder} !important;` : ''}">
+        <span style="min-width: 40px !important; height: 40px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; color: ${COLORS.white} !important; font-size: 15px !important; font-weight: 900 !important; box-shadow: ${SHADOWS.primary} !important; flex-shrink: 0 !important;">${i + 1}</span>
+        <span style="font-size: 16px !important; line-height: 1.7 !important; color: ${COLORS.gray700} !important; padding-top: 8px !important;">${escapeHtml(t)}</span>
+      </li>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}50 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xxl} !important; padding: 40px !important; margin: 56px 0 !important; box-shadow: ${SHADOWS.md} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 20px !important; margin-bottom: 32px !important; padding-bottom: 28px !important; border-bottom: 2px solid ${COLORS.primaryBorder} !important; flex-wrap: wrap !important;">
+    <div style="width: 68px !important; height: 68px !important; min-width: 68px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.xl} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+      <span style="font-size: 34px !important;">🎯</span>
+    </div>
+    <div>
+      <h3 style="font-size: 26px !important; font-weight: 800 !important; margin: 0 !important; color: #3730a3 !important;">Key Takeaways</h3>
+      <p style="font-size: 15px !important; color: ${COLORS.gray500} !important; margin: 6px 0 0 0 !important;">The essential points to remember</p>
+    </div>
+  </div>
+  <ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${items}</ul>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ❓ COMPONENT 14: FAQ ACCORDION (Native HTML5 - Zero JS)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createFAQAccordion(faqs: FAQItem[]): string {
+    if (!isValidArray(faqs)) return '';
+    
+    const validFaqs = faqs.filter(f => isValidString(f.question) && isValidString(f.answer));
+    if (validFaqs.length === 0) return '';
+    
+    const items = validFaqs.map((faq) => `
+      <details style="border: 1px solid ${COLORS.gray200} !important; border-radius: ${RADIUS.md} !important; margin-bottom: 14px !important; background: ${COLORS.white} !important; overflow: hidden !important;" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <summary style="padding: 20px 24px !important; cursor: pointer !important; font-weight: 700 !important; font-size: 16px !important; color: ${COLORS.gray800} !important; list-style: none !important; display: flex !important; justify-content: space-between !important; align-items: center !important; background: ${COLORS.white} !important;" itemprop="name">
+          <span style="flex: 1 !important; padding-right: 18px !important; line-height: 1.4 !important;">${escapeHtml(faq.question)}</span>
+          <span style="width: 32px !important; height: 32px !important; border-radius: ${RADIUS.full} !important; background: ${COLORS.gray100} !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 12px !important; color: ${COLORS.primary} !important; flex-shrink: 0 !important;">▼</span>
+        </summary>
+        <div style="padding: 0 24px 24px 24px !important; font-size: 15px !important; line-height: 1.8 !important; color: ${COLORS.gray600} !important; background: ${COLORS.gray50} !important; border-top: 1px solid ${COLORS.gray200} !important;" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <div itemprop="text" style="padding-top: 20px !important;">${faq.answer}</div>
+        </div>
+      </details>
+    `).join('');
+
+    return `
+<section class="wpo-wrap" itemscope itemtype="https://schema.org/FAQPage" style="margin: 56px 0 !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 18px !important; margin-bottom: 32px !important; flex-wrap: wrap !important;">
+    <div style="width: 64px !important; height: 64px !important; min-width: 64px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.xl} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+      <span style="font-size: 30px !important;">❓</span>
+    </div>
+    <div>
+      <h2 style="font-size: 26px !important; font-weight: 800 !important; margin: 0 !important; color: ${COLORS.gray800} !important;">Frequently Asked Questions</h2>
+      <p style="font-size: 15px !important; color: ${COLORS.gray500} !important; margin: 6px 0 0 0 !important;">${validFaqs.length} questions answered</p>
+    </div>
+  </div>
+  <div>${items}</div>
+</section>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎬 COMPONENT 15: YOUTUBE EMBED
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createYouTubeEmbed(video: YouTubeVideoData): string {
+    if (!video?.videoId) {
+        console.error('[WPO] createYouTubeEmbed: Missing videoId', video);
+        return '';
+    }
+    
+    return `
+<div class="wpo-wrap" style="margin: 52px 0 !important; border-radius: ${RADIUS.xl} !important; overflow: hidden !important; box-shadow: ${SHADOWS.xl} !important; border: none !important; background: #000000 !important;">
+  <div class="wpo-video-container" style="position: relative !important; padding-bottom: 56.25% !important; height: 0 !important; overflow: hidden !important;">
+    <iframe 
+      src="https://www.youtube.com/embed/${video.videoId}?rel=0&modestbranding=1" 
+      title="${escapeHtml(video.title)}"
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      allowfullscreen
+      loading="lazy"
+      style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: none !important;"
+    ></iframe>
+  </div>
+  <div style="padding: 22px 28px !important; background: ${COLORS.gradDark} !important;">
+    <div style="display: flex !important; align-items: center !important; gap: 18px !important; flex-wrap: wrap !important;">
+      <div style="width: 54px !important; height: 54px !important; min-width: 54px !important; background: #ff0000 !important; border-radius: ${RADIUS.md} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 6px 16px rgba(255,0,0,0.3) !important;">
+        <span style="font-size: 26px !important;">▶️</span>
+      </div>
+      <div style="flex: 1 !important; min-width: 200px !important;">
+        <h4 style="font-size: 17px !important; font-weight: 700 !important; margin: 0 0 8px 0 !important; color: ${COLORS.white} !important; line-height: 1.4 !important;">${escapeHtml(truncate(video.title, 60))}</h4>
+        <div style="display: flex !important; gap: 18px !important; flex-wrap: wrap !important; font-size: 13px !important; color: rgba(255,255,255,0.75) !important;">
+          <span>📺 ${escapeHtml(video.channel)}</span>
+          <span>👁️ ${video.views?.toLocaleString() || 0} views</span>
+          ${video.duration ? `<span>⏱️ ${escapeHtml(video.duration)}</span>` : ''}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📚 COMPONENT 16: REFERENCES SECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createReferencesSection(references: DiscoveredReference[]): string {
+    if (!isValidArray(references)) return '';
+    
+    const validRefs = references.filter(r => isValidString(r.url) && isValidString(r.title)).slice(0, 10);
+    if (validRefs.length === 0) return '';
+    
+    const items = validRefs.map((ref, i) => {
+        const yearDisplay = ref.year ? ` (${ref.year})` : '';
+        const authorityBadge = (ref.authorityScore && ref.authorityScore >= 80) 
+            ? `<span style="background: ${COLORS.successBg} !important; color: ${COLORS.successDark} !important; padding: 3px 10px !important; border-radius: 6px !important; font-size: 10px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; margin-left: 10px !important;">HIGH AUTHORITY</span>` 
+            : '';
+        
+        return `
+        <li style="display: flex !important; align-items: flex-start !important; gap: 16px !important; padding: 18px 0 !important; ${i < validRefs.length - 1 ? `border-bottom: 1px solid ${COLORS.gray100} !important;` : ''}">
+          <span style="min-width: 32px !important; height: 32px !important; background: ${COLORS.primaryBg} !important; border-radius: ${RADIUS.sm} !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 13px !important; font-weight: 800 !important; color: ${COLORS.primary} !important; flex-shrink: 0 !important;">${i + 1}</span>
+          <div style="flex: 1 !important; min-width: 0 !important;">
+            <a href="${escapeHtml(ref.url)}" target="_blank" rel="noopener noreferrer" style="font-weight: 700 !important; color: ${COLORS.primary} !important; text-decoration: none !important; display: block !important; margin-bottom: 6px !important; font-size: 16px !important; line-height: 1.4 !important;">
+              ${escapeHtml(truncate(ref.title, 80))}${yearDisplay}
+            </a>
+            <div style="display: flex !important; align-items: center !important; gap: 10px !important; flex-wrap: wrap !important; font-size: 13px !important; color: ${COLORS.gray500} !important;">
+              ${ref.favicon ? `<img src="${escapeHtml(ref.favicon)}" alt="" width="16" height="16" style="border-radius: 4px !important;" onerror="this.style.display='none'">` : ''}
+              <span>${escapeHtml(ref.source)}</span>
+              ${authorityBadge}
+            </div>
+            ${ref.snippet ? `<p style="font-size: 14px !important; line-height: 1.6 !important; margin: 10px 0 0 0 !important; color: ${COLORS.gray500} !important;">${escapeHtml(truncate(ref.snippet, 150))}</p>` : ''}
+          </div>
+        </li>`;
+    }).join('');
+
+    return `
+<section class="wpo-wrap" style="background: ${COLORS.gray50} !important; border-radius: ${RADIUS.xl} !important; padding: 36px !important; margin: 56px 0 !important; box-shadow: ${SHADOWS.md} !important; border: 1px solid ${COLORS.gray200} !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: center !important; gap: 18px !important; margin-bottom: 28px !important; padding-bottom: 24px !important; border-bottom: 2px solid ${COLORS.gray200} !important; flex-wrap: wrap !important;">
+    <div style="width: 60px !important; height: 60px !important; min-width: 60px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.lg} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important;">
+      <span style="font-size: 28px !important;">📚</span>
+    </div>
+    <div>
+      <h2 style="font-size: 24px !important; font-weight: 800 !important; margin: 0 !important; color: ${COLORS.gray800} !important;">References & Sources</h2>
+      <p style="font-size: 15px !important; color: ${COLORS.gray500} !important; margin: 6px 0 0 0 !important;">${validRefs.length} authoritative sources</p>
+    </div>
+  </div>
+  <ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${items}</ul>
+</section>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔢 COMPONENT 17: NUMBERED BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createNumberedBox(number: string, title: string, description: string): string {
+    if (!isValidString(title) || !isValidString(description)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}40 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xl} !important; padding: 32px !important; margin: 40px 0 !important; box-shadow: ${SHADOWS.md} !important; overflow: hidden !important;">
+  <div style="display: flex !important; gap: 24px !important; flex-wrap: wrap !important;">
+    <div style="width: 68px !important; height: 68px !important; min-width: 68px !important; background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.xl} !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: ${SHADOWS.primary} !important; flex-shrink: 0 !important;">
+      <span style="font-size: 30px !important; font-weight: 900 !important; color: ${COLORS.white} !important;">${escapeHtml(number)}</span>
+    </div>
+    <div style="flex: 1 !important; min-width: 200px !important;">
+      <h4 style="font-size: 20px !important; font-weight: 800 !important; margin: 0 0 12px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h4>
+      <p style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray600} !important; margin: 0 !important;">${description}</p>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎨 COMPONENT 18: ICON GRID BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createIconGridBox(title: string, items: IconGridItem[]): string {
+    if (!isValidString(title) || !isValidArray(items)) return '';
+    
+    const gridItems = items.map(item => `
+      <div style="flex: 1 !important; min-width: 200px !important; text-align: center !important; padding: 28px 20px !important; background: ${COLORS.white} !important; border-radius: ${RADIUS.lg} !important; box-shadow: ${SHADOWS.sm} !important;">
+        <div style="font-size: 40px !important; margin-bottom: 16px !important;">${item.icon}</div>
+        <h4 style="font-size: 17px !important; font-weight: 800 !important; margin: 0 0 10px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(item.title)}</h4>
+        <p style="font-size: 14px !important; line-height: 1.6 !important; margin: 0 !important; color: ${COLORS.gray500} !important;">${escapeHtml(item.description)}</p>
+      </div>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}30 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xxl} !important; padding: 36px !important; margin: 56px 0 !important; overflow: hidden !important;">
+  <h3 style="font-size: 24px !important; font-weight: 900 !important; margin: 0 0 28px 0 !important; text-align: center !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h3>
+  <div style="display: flex !important; flex-wrap: wrap !important; gap: 20px !important;">
+    ${gridItems}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📅 COMPONENT 19: TIMELINE BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createTimelineBox(title: string, events: TimelineEvent[]): string {
+    if (!isValidString(title) || !isValidArray(events)) return '';
+    
+    const timelineItems = events.map((event, i) => `
+      <div style="display: flex !important; gap: 20px !important; ${i < events.length - 1 ? 'padding-bottom: 32px !important;' : ''}">
+        <div style="display: flex !important; flex-direction: column !important; align-items: center !important;">
+          <div style="width: 20px !important; height: 20px !important; background: ${COLORS.gradPrimary} !important; border-radius: 50% !important; flex-shrink: 0 !important; box-shadow: ${SHADOWS.primary} !important;"></div>
+          ${i < events.length - 1 ? `<div style="width: 3px !important; flex: 1 !important; background: linear-gradient(180deg, ${COLORS.primary} 0%, ${COLORS.primaryBorder} 100%) !important; margin: 8px 0 !important;"></div>` : ''}
+        </div>
+        <div style="flex: 1 !important; padding-bottom: 8px !important;">
+          <div style="font-size: 12px !important; font-weight: 700 !important; color: ${COLORS.primary} !important; text-transform: uppercase !important; letter-spacing: 1px !important; margin-bottom: 6px !important;">${escapeHtml(event.time)}</div>
+          <h4 style="font-size: 18px !important; font-weight: 800 !important; margin: 0 0 8px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(event.title)}</h4>
+          <p style="font-size: 15px !important; line-height: 1.7 !important; margin: 0 !important; color: ${COLORS.gray500} !important;">${escapeHtml(event.description)}</p>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}30 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xxl} !important; padding: 36px !important; margin: 56px 0 !important; overflow: hidden !important;">
+  <h3 style="font-size: 24px !important; font-weight: 900 !important; margin: 0 0 32px 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h3>
+  ${timelineItems}
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📈 COMPONENT 20: PROGRESS TRACKER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createProgressTracker(title: string, steps: string[], currentStep: number = 1): string {
+    if (!isValidString(title) || !isValidArray(steps)) return '';
+    
+    const stepItems = steps.map((step, i) => {
+        const isCompleted = i < currentStep - 1;
+        const isCurrent = i === currentStep - 1;
+        const bgColor = isCompleted ? COLORS.success : isCurrent ? COLORS.primary : COLORS.gray300;
+        const textColor = isCompleted || isCurrent ? COLORS.white : COLORS.gray600;
+        
+        return `
+          <div style="flex: 1 !important; text-align: center !important; min-width: 80px !important;">
+            <div style="width: 48px !important; height: 48px !important; margin: 0 auto 12px !important; background: ${bgColor} !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; color: ${textColor} !important; font-size: 18px !important; font-weight: 800 !important; box-shadow: ${isCompleted || isCurrent ? `0 6px 16px ${bgColor}50` : 'none'} !important;">
+              ${isCompleted ? '✓' : i + 1}
+            </div>
+            <div style="font-size: 14px !important; font-weight: 600 !important; color: ${isCompleted || isCurrent ? COLORS.gray800 : COLORS.gray400} !important;">${escapeHtml(step)}</div>
+          </div>
+          ${i < steps.length - 1 ? `<div style="flex: 0.5 !important; height: 4px !important; background: ${isCompleted ? COLORS.success : COLORS.gray200} !important; margin-top: 24px !important; border-radius: 2px !important;"></div>` : ''}
+        `;
+    }).join('');
+
+    return `
+<div class="wpo-wrap" style="background: linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primaryBorder}30 100%) !important; border: 2px solid ${COLORS.primaryBorder} !important; border-radius: ${RADIUS.xxl} !important; padding: 36px !important; margin: 56px 0 !important; overflow: hidden !important;">
+  <h3 style="font-size: 22px !important; font-weight: 900 !important; margin: 0 0 32px 0 !important; text-align: center !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h3>
+  <div style="display: flex !important; align-items: flex-start !important; justify-content: center !important; flex-wrap: wrap !important; gap: 8px !important;">
+    ${stepItems}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 👍👎 COMPONENT 21: PROS & CONS BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createProsConsBox(title: string, data: ProsConsItem): string {
+    if (!isValidString(title)) return '';
+    if (!isValidArray(data.pros) && !isValidArray(data.cons)) return '';
+    
+    const prosItems = (data.pros || []).map(pro => `
+      <li style="display: flex !important; align-items: flex-start !important; gap: 12px !important; padding: 12px 0 !important;">
+        <span style="color: ${COLORS.success} !important; font-size: 18px !important; flex-shrink: 0 !important;">✓</span>
+        <span style="font-size: 15px !important; line-height: 1.6 !important; color: ${COLORS.gray700} !important;">${escapeHtml(pro)}</span>
+      </li>
+    `).join('');
+    
+    const consItems = (data.cons || []).map(con => `
+      <li style="display: flex !important; align-items: flex-start !important; gap: 12px !important; padding: 12px 0 !important;">
+        <span style="color: ${COLORS.danger} !important; font-size: 18px !important; flex-shrink: 0 !important;">✗</span>
+        <span style="font-size: 15px !important; line-height: 1.6 !important; color: ${COLORS.gray700} !important;">${escapeHtml(con)}</span>
+      </li>
+    `).join('');
+
+    return `
+<div class="wpo-wrap" style="border-radius: ${RADIUS.xl} !important; overflow: hidden !important; margin: 48px 0 !important; box-shadow: ${SHADOWS.lg} !important; border: 1px solid ${COLORS.gray200} !important;">
+  <div style="padding: 22px 28px !important; background: linear-gradient(135deg, ${COLORS.gray50} 0%, ${COLORS.gray100} 100%) !important; border-bottom: 1px solid ${COLORS.gray200} !important;">
+    <div style="display: flex !important; align-items: center !important; gap: 14px !important;">
+      <span style="font-size: 28px !important;">⚖️</span>
+      <h4 style="font-size: 20px !important; font-weight: 800 !important; margin: 0 !important; color: ${COLORS.gray800} !important;">${escapeHtml(title)}</h4>
+    </div>
+  </div>
+  <div style="display: flex !important; flex-wrap: wrap !important;">
+    <div style="flex: 1 !important; min-width: 250px !important; padding: 24px !important; background: ${COLORS.successBg} !important; border-right: 1px solid ${COLORS.gray200} !important;">
+      <h5 style="font-size: 14px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; color: ${COLORS.success} !important; margin: 0 0 16px 0 !important;">👍 Pros</h5>
+      <ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${prosItems}</ul>
+    </div>
+    <div style="flex: 1 !important; min-width: 250px !important; padding: 24px !important; background: ${COLORS.dangerBg} !important;">
+      <h5 style="font-size: 14px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; color: ${COLORS.danger} !important; margin: 0 0 16px 0 !important;">👎 Cons</h5>
+      <ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${consItems}</ul>
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏆 COMPONENT 22: FEATURED BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createFeaturedBox(title: string, description: string, features: string[]): string {
+    if (!isValidString(title) || !isValidString(description)) return '';
+    
+    const featureItems = isValidArray(features) ? features.map(f => `
+      <li style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 8px 0 !important;">
+        <span style="color: ${COLORS.warning} !important; font-size: 16px !important;">★</span>
+        <span style="font-size: 14px !important; color: rgba(255,255,255,0.9) !important;">${escapeHtml(f)}</span>
+      </li>
+    `).join('') : '';
+
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.gradDark} !important; border-radius: ${RADIUS.xxl} !important; padding: 40px !important; margin: 56px 0 !important; box-shadow: ${SHADOWS.xl} !important; overflow: hidden !important; position: relative !important;">
+  <div style="position: absolute !important; top: -20px !important; right: -20px !important; width: 120px !important; height: 120px !important; background: ${COLORS.gradPurple} !important; border-radius: 50% !important; opacity: 0.3 !important;"></div>
+  <div style="position: relative !important; z-index: 1 !important;">
+    <div style="display: flex !important; align-items: center !important; gap: 16px !important; margin-bottom: 20px !important; flex-wrap: wrap !important;">
+      <span style="font-size: 40px !important;">🏆</span>
+      <h3 style="font-size: 28px !important; font-weight: 900 !important; margin: 0 !important; color: ${COLORS.white} !important;">${escapeHtml(title)}</h3>
+    </div>
+    <p style="font-size: 17px !important; line-height: 1.8 !important; color: rgba(255,255,255,0.85) !important; margin: 0 0 24px 0 !important;">${description}</p>
+    ${featureItems ? `<ul style="list-style: none !important; padding: 0 !important; margin: 0 !important;">${featureItems}</ul>` : ''}
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 💰 COMPONENT 23: PRICING BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createPricingBox(title: string, price: string, period: string, features: string[], highlighted: boolean = false): string {
+    if (!isValidString(title) || !isValidString(price)) return '';
+    
+    const featureItems = isValidArray(features) ? features.map(f => `
+      <li style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 0 !important; border-bottom: 1px solid ${COLORS.gray100} !important;">
+        <span style="color: ${COLORS.success} !important; font-size: 16px !important;">✓</span>
+        <span style="font-size: 14px !important; color: ${COLORS.gray700} !important;">${escapeHtml(f)}</span>
+      </li>
+    `).join('') : '';
+
+    const bgStyle = highlighted 
+        ? `background: ${COLORS.gradPrimary} !important; color: ${COLORS.white} !important;`
+        : `background: ${COLORS.white} !important;`;
+    
+    const textColor = highlighted ? COLORS.white : COLORS.gray800;
+    const subtextColor = highlighted ? 'rgba(255,255,255,0.8)' : COLORS.gray500;
+
+    return `
+<div class="wpo-wrap" style="${bgStyle} border-radius: ${RADIUS.xxl} !important; padding: 36px !important; margin: 40px 0 !important; box-shadow: ${highlighted ? SHADOWS.primary : SHADOWS.lg} !important; border: ${highlighted ? 'none' : `2px solid ${COLORS.gray200}`} !important; text-align: center !important; overflow: hidden !important;">
+  ${highlighted ? `<div style="background: ${COLORS.warning} !important; color: ${COLORS.gray900} !important; font-size: 11px !important; font-weight: 800 !important; text-transform: uppercase !important; letter-spacing: 1px !important; padding: 6px 16px !important; border-radius: 20px !important; display: inline-block !important; margin-bottom: 20px !important;">Most Popular</div>` : ''}
+  <h3 style="font-size: 24px !important; font-weight: 800 !important; margin: 0 0 8px 0 !important; color: ${textColor} !important;">${escapeHtml(title)}</h3>
+  <div style="margin: 24px 0 !important;">
+    <span style="font-size: 48px !important; font-weight: 900 !important; color: ${textColor} !important;">${escapeHtml(price)}</span>
+    <span style="font-size: 16px !important; color: ${subtextColor} !important;">/${escapeHtml(period)}</span>
+  </div>
+  ${featureItems ? `<ul style="list-style: none !important; padding: 0 !important; margin: 24px 0 0 0 !important; text-align: left !important; ${highlighted ? `background: rgba(255,255,255,0.1) !important; border-radius: ${RADIUS.lg} !important; padding: 16px !important;` : ''}">${featureItems}</ul>` : ''}
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📝 COMPONENT 24: NOTE BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createNoteBox(note: string, author?: string): string {
+    if (!isValidString(note)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.warningBg} !important; border: 2px dashed ${COLORS.warningBorder} !important; border-radius: ${RADIUS.lg} !important; padding: 24px 28px !important; margin: 36px 0 !important; overflow: hidden !important;">
+  <div style="display: flex !important; align-items: flex-start !important; gap: 16px !important; flex-wrap: wrap !important;">
+    <span style="font-size: 24px !important; transform: rotate(-5deg) !important;">📝</span>
+    <div style="flex: 1 !important; min-width: 200px !important;">
+      <p style="font-size: 15px !important; line-height: 1.7 !important; color: ${COLORS.gray700} !important; margin: 0 !important; font-style: italic !important;">${note}</p>
+      ${author ? `<p style="font-size: 13px !important; color: ${COLORS.gray500} !important; margin: 12px 0 0 0 !important; font-weight: 600 !important;">— ${escapeHtml(author)}</p>` : ''}
+    </div>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎁 COMPONENT 25: CTA BOX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function createCTABox(title: string, description: string, buttonText: string, buttonUrl: string): string {
+    if (!isValidString(title) || !isValidString(buttonText)) return '';
+    
+    return `
+<div class="wpo-wrap" style="background: ${COLORS.gradPrimary} !important; border-radius: ${RADIUS.xxl} !important; padding: 48px !important; margin: 56px 0 !important; text-align: center !important; box-shadow: ${SHADOWS.primary} !important; overflow: hidden !important; position: relative !important;">
+  <div style="position: absolute !important; top: -40px !important; left: -40px !important; width: 160px !important; height: 160px !important; background: rgba(255,255,255,0.1) !important; border-radius: 50% !important;"></div>
+  <div style="position: absolute !important; bottom: -60px !important; right: -60px !important; width: 200px !important; height: 200px !important; background: rgba(255,255,255,0.05) !important; border-radius: 50% !important;"></div>
+  <div style="position: relative !important; z-index: 1 !important;">
+    <h3 style="font-size: 32px !important; font-weight: 900 !important; margin: 0 0 16px 0 !important; color: ${COLORS.white} !important;">${escapeHtml(title)}</h3>
+    ${description ? `<p style="font-size: 18px !important; line-height: 1.7 !important; color: rgba(255,255,255,0.9) !important; margin: 0 0 32px 0 !important; max-width: 600px !important; margin-left: auto !important; margin-right: auto !important;">${description}</p>` : ''}
+    <a href="${escapeHtml(buttonUrl)}" style="display: inline-block !important; background: ${COLORS.white} !important; color: ${COLORS.primary} !important; font-size: 16px !important; font-weight: 800 !important; padding: 16px 40px !important; border-radius: 50px !important; text-decoration: none !important; box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important; transition: transform 0.2s ease !important;">
+      ${escapeHtml(buttonText)} →
+    </a>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📤 DEFAULT EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export default {
+    VISUAL_COMPONENTS_VERSION,
+    THEME_ADAPTIVE_CSS,
+    
+    // Utility functions
+    escapeHtml,
+    generateUniqueId,
+    
+    // All 25 components
+    createQuickAnswerBox,
+    createProTipBox,
+    createWarningBox,
+    createExpertQuoteBox,
+    createHighlightBox,
+    createCalloutBox,
+    createStatisticsBox,
+    createDataTable,
+    createChecklistBox,
+    createStepByStepBox,
+    createComparisonTable,
+    createDefinitionBox,
+    createKeyTakeaways,
+    createFAQAccordion,
+    createYouTubeEmbed,
+    createReferencesSection,
+    createNumberedBox,
+    createIconGridBox,
+    createTimelineBox,
+    createProgressTracker,
+    createProsConsBox,
+    createFeaturedBox,
+    createPricingBox,
+    createNoteBox,
+    createCTABox
 };
-
-export const OPENROUTER_MODELS = [
-    'anthropic/claude-sonnet-4',
-    'google/gemini-2.5-flash-preview',
-    'openai/gpt-4o',
-    'deepseek/deepseek-chat',
-    'meta-llama/llama-3.3-70b-instruct'
-];
-
-export default orchestrator;
