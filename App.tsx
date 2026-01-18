@@ -1160,7 +1160,74 @@ export default function App() {
                         Crawl your sitemap to enable intelligent internal linking in generated content.
                     </p>
                 </div>
-                
+
+
+                {/*
+          📋 SITE CONTEXT CONFIGURATION CARD
+          ═══════════════════════════════════════════════════════════
+          Essential business context for content generation optimization
+        */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>📋 Site Context Configuration</h2>
+          
+          <label style={styles.label}>Organization/Business Name</label>
+          <input
+            type="text"
+            style={styles.input}
+            placeholder="e.g., TechCorp Solutions"
+            value={siteContext.organizationName}
+            onChange={(e) => setSiteContext({...siteContext, organizationName: e.target.value})}
+          />
+          <p style={{ ...styles.helpText, marginTop: '12px' }}>
+            Your company or brand name for contextual content generation
+          </p>
+
+          <label style={styles.label}>Author/Content Creator Name</label>
+          <input
+            type="text"
+            style={styles.input}
+            placeholder="e.g., John Smith"
+            value={siteContext.authorName}
+            onChange={(e) => setSiteContext({...siteContext, authorName: e.target.value})}
+          />
+          <p style={{ ...styles.helpText, marginTop: '12px' }}>
+            Primary author or content creator name
+          </p>
+
+          <label style={styles.label}>Industry/Business Vertical</label>
+          <select
+            style={styles.input}
+            value={siteContext.industry}
+            onChange={(e) => setSiteContext({...siteContext, industry: e.target.value})}
+          >
+            <option value="">Select Industry</option>
+            <option value="Technology">Technology</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Finance">Finance</option>
+            <option value="Education">Education</option>
+            <option value="Retail">Retail</option>
+            <option value="Manufacturing">Manufacturing</option>
+            <option value="Services">Professional Services</option>
+            <option value="Media">Media & Entertainment</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Other">Other</option>
+          </select>
+          <p style={{ ...styles.helpText, marginTop: '12px' }}>
+            Primary business vertical (e.g., Technology, Healthcare, Finance)
+          </p>
+
+          <label style={styles.label}>Target Audience Description</label>
+          <textarea
+            style={{ ...styles.input, minHeight: '80px', resize: 'vertical' }}
+            placeholder="e.g., B2B SaaS executives, Small business owners"
+            value={siteContext.targetAudience}
+            onChange={(e) => setSiteContext({...siteContext, targetAudience: e.target.value})}
+          />
+          <p style={{ ...styles.helpText, marginTop: '12px' }}>
+            Target audience description (e.g., B2B SaaS executives, Small business owners)
+          </p>
+        </div>
+
                 {/* ═══════════════════════════════════════════════════════════════════
                     📤 WORDPRESS PUBLISHING CARD
                     ═══════════════════════════════════════════════════════════════════ */}
