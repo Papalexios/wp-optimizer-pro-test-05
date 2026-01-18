@@ -1,7 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WP OPTIMIZER PRO v40.0 — ENTERPRISE SOTA MAIN APPLICATION
-// ═══════════════════════════════════════════════════════════════════════════════
+// WP OPTIMIZER PRO v42.0 — ENTERPRISE SOTA MAIN APPLICATION// ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 SOTA ENTERPRISE FEATURES:
+// ✅ Content Strategy Dashboard with Real-time Stats
+// ✅ Quick Optimize for Single-page Optimization  
+// ✅ Bulk Optimization Mode with Queue Management
+// ✅ Activity Log with Real-time Tracking
+// ✅ Analytics & Performance Metrics Dashboard
+// ✅ Optimization Mode (Surgical vs Full Rewrite)
+// ✅ Content Preservation Controls (Images, Categories, Tags)
 // ✅ Manual AI Model Input for OpenRouter & Groq
 // ✅ Smart Model Selection with Validation
 // ✅ Enhanced Error Handling & Recovery
@@ -34,6 +40,25 @@ import {
     BulkGenerationResult,
     APIKeyConfig
 } from './types';
+import {
+  OptimizationPage,
+  OptimizationJob,
+  ActivityLogEntry,
+  AnalyticsMetrics,
+  SessionStatistics,
+  PageStatus,
+  ActivityType,
+  QuickOptimizeRequest,
+  BulkOptimizeRequest,
+  PageQueueFilters,
+  DEFAULT_ANALYTICS_METRICS,
+  DEFAULT_SESSION_STATS,
+  generateId,
+  isPageAtTarget,
+  getStatusColor,
+  getStatusIcon,
+  STORAGE_KEYS
+} from './types/optimization-system';
 import {
   SiteContext,
   OptimizationConfig,
@@ -482,6 +507,57 @@ export default function App() {
     const loaded = loadEnterpriseConfig();
     return loaded?.optimization || DEFAULT_OPTIMIZATION_CONFIG;
   });
+
+      // ═════════════════════════════════════════════════════════════════
+  // 📊 OPTIMIZATION SYSTEM STATE (SOTA v42.0) 
+  // ═════════════════════════════════════════════════════════════════
+  
+  // Pages for optimization queue
+  const [pages, setPages] = useState<OptimizationPage[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.PAGES);
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  // Analytics metrics
+  const [metrics, setMetrics] = useState<AnalyticsMetrics>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.METRICS);
+    return stored ? JSON.parse(stored) : DEFAULT_ANALYTICS_METRICS;
+  });
+  
+  // Activity log
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.ACTIVITY_LOG);
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  // Session statistics
+  const [sessionStats, setSessionStats] = useState<SessionStatistics>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.SESSION_STATS);
+    return stored ? JSON.parse(stored) : DEFAULT_SESSION_STATS;
+  });
+  
+  // Recent jobs
+  const [recentJobs, setRecentJobs] = useState<OptimizationJob[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.RECENT_JOBS);
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  // Quick optimize form state
+  const [quickOptimizeUrl, setQuickOptimizeUrl] = useState('');
+  const [quickOptimizeKeyword, setQuickOptimizeKeyword] = useState('');
+  const [quickOptimizeMode, setQuickOptimizeMode] = useState<'surgical' | 'rewrite'>('surgical');
+  const [quickOptimizeAutoPublish, setQuickOptimizeAutoPublish] = useState(false);
+  const [isQuickOptimizing, setIsQuickOptimizing] = useState(false);
+  
+  // Bulk optimization state
+  const [selectedPageIds, setSelectedPageIds] = useState<string[]>([]);
+  const [isBulkOptimizing, setIsBulkOptimizing] = useState(false);
+  const [bulkOptimizeMode, setBulkOptimizeMode] = useState<'surgical' | 'rewrite'>('surgical');
+  const [bulkAutoPublish, setBulkAutoPublish] = useState(false);
+  
+  // Page queue filters
+  const [pageFilter, setPageFilter] = useState<PageStatus | 'all'>('all');
+  const [pageSearchQuery, setPageSearchQuery] = useState('');
     
     // Refs
     const logContainerRef = useRef<HTMLDivElement>(null);
@@ -1226,6 +1302,176 @@ export default function App() {
           />
           <p style={{ ...styles.helpText, marginTop: '12px' }}>
             Target audience description (e.g., B2B SaaS executives, Small business owners)
+          </p>
+        </div>
+
+                        {/*
+        🎯 OPTIMIZATION MODE & CONTENT PRESERVATION CARD
+        ═══════════════════════════════════════════════
+        Controls optimization strategy and content preservation settings
+        */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>🎯 Optimization Mode</h2>
+          
+          <label style={styles.label}>Optimization Strategy</label>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+            <button
+              style={{
+                flex: 1,
+                padding: '16px',
+                background: optimizationConfig.mode === 'surgical' ? COLORS.gradPrimary : 'rgba(99, 102, 241, 0.1)',
+                border: `2px solid ${optimizationConfig.mode === 'surgical' ? COLORS.primary : 'rgba(99, 102, 241, 0.3)'}`,
+                borderRadius: '12px',
+                color: optimizationConfig.mode === 'surgical' ? '#fff' : '#a5b4fc',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => setOptimizationConfig({...optimizationConfig, mode: 'surgical'})}
+            >
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>🔬</div>
+              <div style={{ fontWeight: 900, marginBottom: '4px' }}>Surgical Mode</div>
+              <div style={{ fontSize: '11px', opacity: 0.8, lineHeight: '1.4' }}>
+                Improves existing content while preserving what works. Best for established pages.
+              </div>
+            </button>
+            
+            <button
+              style={{
+                flex: 1,
+                padding: '16px',
+                background: optimizationConfig.mode === 'rewrite' ? COLORS.gradPrimary : 'rgba(99, 102, 241, 0.1)',
+                border: `2px solid ${optimizationConfig.mode === 'rewrite' ? COLORS.primary : 'rgba(99, 102, 241, 0.3)'}`,
+                borderRadius: '12px',
+                color: optimizationConfig.mode === 'rewrite' ? '#fff' : '#a5b4fc',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => setOptimizationConfig({...optimizationConfig, mode: 'rewrite'})}
+            >
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>📝</div>
+              <div style={{ fontWeight: 900, marginBottom: '4px' }}>Full Rewrite</div>
+              <div style={{ fontSize: '11px', opacity: 0.8, lineHeight: '1.4' }}>
+                Complete content regeneration. Best for low-quality or outdated pages.
+              </div>
+            </button>
+          </div>
+          
+          <hr style={styles.divider} />
+          
+          <label style={styles.label}>Content Preservation Controls</label>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={styles.toggleContainer}>
+              <div
+                style={{
+                  ...styles.toggleSwitch,
+                  ...(optimizationConfig.imageSettings.preserveImages ? styles.toggleSwitchActive : {})
+                }}
+                onClick={() => setOptimizationConfig({
+                  ...optimizationConfig,
+                  imageSettings: {
+                    ...optimizationConfig.imageSettings,
+                    preserveImages: !optimizationConfig.imageSettings.preserveImages
+                  }
+                })}
+              >
+                <div style={{
+                  ...styles.toggleKnob,
+                  ...(optimizationConfig.imageSettings.preserveImages ? styles.toggleKnobActive : {})
+                }} />
+              </div>
+              <span style={{ fontSize: '14px', color: '#e2e8f0' }}>🖼️ Preserve Images</span>
+            </div>
+            
+            <div style={styles.toggleContainer}>
+              <div
+                style={{
+                  ...styles.toggleSwitch,
+                  ...(optimizationConfig.imageSettings.optimizeAltText ? styles.toggleSwitchActive : {})
+                }}
+                onClick={() => setOptimizationConfig({
+                  ...optimizationConfig,
+                  imageSettings: {
+                    ...optimizationConfig.imageSettings,
+                    optimizeAltText: !optimizationConfig.imageSettings.optimizeAltText
+                  }
+                })}
+              >
+                <div style={{
+                  ...styles.toggleKnob,
+                  ...(optimizationConfig.imageSettings.optimizeAltText ? styles.toggleKnobActive : {})
+                }} />
+              </div>
+              <span style={{ fontSize: '14px', color: '#e2e8f0' }}>📝 Optimize Alt Text</span>
+            </div>
+            
+            <div style={styles.toggleContainer}>
+              <div
+                style={{
+                  ...styles.toggleSwitch,
+                  ...(optimizationConfig.imageSettings.keepFeaturedImage ? styles.toggleSwitchActive : {})
+                }}
+                onClick={() => setOptimizationConfig({
+                  ...optimizationConfig,
+                  imageSettings: {
+                    ...optimizationConfig.imageSettings,
+                    keepFeaturedImage: !optimizationConfig.imageSettings.keepFeaturedImage
+                  }
+                })}
+              >
+                <div style={{
+                  ...styles.toggleKnob,
+                  ...(optimizationConfig.imageSettings.keepFeaturedImage ? styles.toggleKnobActive : {})
+                }} />
+              </div>
+              <span style={{ fontSize: '14px', color: '#e2e8f0' }}>🎨 Keep Featured Image</span>
+            </div>
+            
+            <div style={styles.toggleContainer}>
+              <div
+                style={{
+                  ...styles.toggleSwitch,
+                  ...(optimizationConfig.preserveCategories ? styles.toggleSwitchActive : {})
+                }}
+                onClick={() => setOptimizationConfig({
+                  ...optimizationConfig,
+                  preserveCategories: !optimizationConfig.preserveCategories
+                })}
+              >
+                <div style={{
+                  ...styles.toggleKnob,
+                  ...(optimizationConfig.preserveCategories ? styles.toggleKnobActive : {})
+                }} />
+              </div>
+              <span style={{ fontSize: '14px', color: '#e2e8f0' }}>📁 Keep Categories</span>
+            </div>
+            
+            <div style={styles.toggleContainer}>
+              <div
+                style={{
+                  ...styles.toggleSwitch,
+                  ...(optimizationConfig.preserveTags ? styles.toggleSwitchActive : {})
+                }}
+                onClick={() => setOptimizationConfig({
+                  ...optimizationConfig,
+                  preserveTags: !optimizationConfig.preserveTags
+                })}
+              >
+                <div style={{
+                  ...styles.toggleKnob,
+                  ...(optimizationConfig.preserveTags ? styles.toggleKnobActive : {})
+                }} />
+              </div>
+              <span style={{ fontSize: '14px', color: '#e2e8f0' }}>🏷️ Keep Tags</span>
+            </div>
+          </div>
+          
+          <p style={{ ...styles.helpText, marginTop: '16px' }}>
+            💡 Tip: Surgical mode respects these settings more strictly, while Full Rewrite may override for optimal results.
           </p>
         </div>
 
