@@ -538,6 +538,9 @@ export default function App() {
             customOpenRouterModel,
             customGroqModel
         }));
+          }, [useCustomOpenRouterModel, useCustomGroqModel, customOpenRouterModel, customGroqModel]);
+
+      // Persist enterprise configuration (Site Context + Optimization Config)
 
           // Persist enterprise configuration (Site Context + Optimization Config)
   useEffect(() => {
