@@ -1732,7 +1732,7 @@ OUTPUT JSON:
 
                 if (parsed.success && parsed.data?.htmlContent) {
                     rawContract = parsed.data;
-                    log(`   ✅ Content generated: ${countWords(rawContract.htmlContent)} words`);
+                    log(`   📄 Content generated: ${(countWordsOf(rawContract!.htmlContent)) words });
                     break;
                 }
             } catch (e: any) {
