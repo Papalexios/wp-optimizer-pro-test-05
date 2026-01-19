@@ -36,7 +36,6 @@ import { updateExistingPost, fetchExistingPost, batchUpdatePosts } from './lib/w
 import {
     ContentContract,
     GenerateConfig,
-    CrawledPage,
     InternalLinkTarget,
     BulkGenerationResult,
     APIKeyConfig
