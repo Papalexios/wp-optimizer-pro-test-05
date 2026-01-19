@@ -74,6 +74,8 @@ export const TOKENS = {
     radiusLg: '16px',
     radiusXl: '20px',
     radiusXxl: '24px',
+  radiusXL: '20px',
+  radiusFull: '9999px',
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
