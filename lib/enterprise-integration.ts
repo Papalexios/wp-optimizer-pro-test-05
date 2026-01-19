@@ -89,8 +89,6 @@ export async function generateEnhancedBlogPost(
     enhancedHtml += generateHeroSection(
       config.topic,
       `Discover everything you need to know about ${config.topic}`,
-      'Read Full Guide',
-      '#main-content'
     );
   }
   
@@ -233,13 +231,9 @@ export function generateVisualEnhancements(
   let visuals = '';
   
   // Add progress indicator
-  visuals += generateProgressIndicator(75, 'Content Quality');
-  
+  visuals += generateProgressIndicator('Content Quality', 75);  
   // Add social proof counters
-  stats.forEach(stat => {
-    visuals += generateSocialProofCounter(stat.value, stat.label);
-  });
-  
+  visuals += generateSocialProofCounter(stats);  
   return visuals;
 }
 
